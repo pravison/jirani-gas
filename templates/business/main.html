@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+{% load humanize %}
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>{% block title %} {% endblock%}</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link href="{% static 'images/logo.jpg' %}" rel="icon">
+  <link href="{% static 'images/apple-touch-icon.png' %}" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/quill/quill.snow.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/quill/quill.bubble.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/remixicon/remixicon.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/simple-datatables/style.css' %}" rel="stylesheet">
+
+  <!-- Template Main CSS File -->
+  <link href="{% static 'assets/css/style.css' %}" rel="stylesheet">
+
+
+</head>
+
+<body>
+
+  <!-- ======= Header ======= -->
+  <header id="header" class="header fixed-top d-flex align-items-center">
+    
+    {% if staff and business %}
+    <div class="d-flex align-items-center justify-content-between">
+      <a href="{% url 'dashboard'  business.slug %}" class="logo d-flex align-items-center">
+        <span class="d-none d-lg-block">{{ business.business_name }}</span>
+      </a>
+      <i class="bi bi-list toggle-sidebar-btn"></i>
+    </div><!-- End Logo -->
+    {% else %}
+    
+    <div class="d-flex align-items-center justify-content-between">
+      <a href="{% url 'index' %}" class="logo d-flex align-items-center">
+        <img src="{% static 'images/logo.png' %}" alt="">
+        <span class="d-none d-lg-block">Jirani Gas</span>
+      </a>
+      <i class="bi bi-list toggle-sidebar-btn"></i>
+    </div><!-- End Logo -->
+    {% endif %}
+
+    <nav class="header-nav ms-auto">
+      <ul class="d-flex align-items-center">
+        {% if staff and business %}
+        <li class="nav-item d-block d-lg-none">
+          <a class="nav-link nav-icon " href="{% url 'dashboard'  business.slug %}">
+            <span class="d-lg-block">{{ business.business_name }}</span>
+          </a>
+        </li><!-- End Search Icon-->
+        {% else %}
+        <li class="nav-item d-block d-lg-none">
+          <a class="nav-link nav-icon " href="{% url 'index' %}">
+            <span class="d-lg-block">Jirani Gas</span>
+          </a>
+        </li><!-- End Search Icon-->
+        {% endif %}
+
+       
+        <li class="nav-item dropdown pe-3">
+
+          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="" data-bs-toggle="dropdown">
+            <i class="bi bi-person"></i>
+            <span class="d-none d-md-block dropdown-toggle ps-2">{{ request.user.first_name }}</span>
+          </a><!-- End Profile Iamge Icon -->
+
+          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+            
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="{% url 'profile' %}">
+                <i class="bi bi-person"></i>
+                <span>My Profile</span>
+              </a>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="https://wa.me/254706420043/">
+                <i class="bi bi-question-circle"></i>
+                <span>Need Help?</span>
+              </a>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="{% url 'logout_user' %}">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Sign Out</span>
+              </a>
+            </li>
+
+          </ul><!-- End Profile Dropdown Items -->
+        </li><!-- End Profile Nav -->
+
+      </ul>
+    </nav><!-- End Icons Navigation -->
+
+  </header><!-- End Header -->
+
+  <!-- ======= Sidebar ======= -->
+  <aside id="sidebar" class="sidebar">
+
+    <ul class="sidebar-nav" id="sidebar-nav">
+      {% if staff %}
+      <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-journal-text"></i><span>Business Accounts</span><i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+          {% if request.user == business.owner %}
+          {% for business in businesses %}
+          <li>
+            <a href="{% url 'dashboard' business.slug %}">
+              <i class="bi bi-circle"></i><span>{{ business.business_name }}</span>
+            </a>
+          </li>
+          {% endfor %}
+          
+          <li>
+            <a href="{% url 'add_business' %}?pricing_plan=fremium">
+              <i class="bi bi-circle"></i><span>Add New Bussiness</span>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </li><!-- End Forms Nav -->
+
+      <li class="nav-item">
+        <a class="nav-link " href="{% url 'dashboard' business.slug %}">
+          <i class="bi bi-grid"></i>
+          <span>Dashboard</span>
+        </a>
+      </li><!-- End Dashboard Nav -->
+      
+      <!-- oders nav -->
+      <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#components-orders-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-people"></i><span>Customers Orders</span><i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul id="components-orders-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+          <li>
+            <a href="{% url 'customers' business.slug %}">
+              <i class="bi bi-circle"></i><span>Pending Orders</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="#">
+              <i class="bi bi-circle"></i><span>all orders </span>
+            </a>
+          </li>
+        </ul>
+      </li><!-- End orders Nav -->
+
+      <!-- products nav -->
+      <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#components-products-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-people"></i><span>Products</span><i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul id="components-products-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+          <li>
+            <a href="{% url 'customers' business.slug %}">
+              <i class="bi bi-circle"></i><span>Products</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <i class="bi bi-circle"></i><span>Add Productss</span>
+            </a>
+          </li>
+        </ul>
+      </li><!-- End products Nav -->
+<!-- customers nav -->
+      <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-people"></i><span>Customers</span><i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+          <li>
+            <a href="{% url 'customers' business.slug %}">
+              <i class="bi bi-circle"></i><span>Customers</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'add_customer' %}?refferal_code={{customer.refferal_code}}&bussiness_slug={{business.slug}}">
+              <i class="bi bi-circle"></i><span>Add Customers</span>
+            </a>
+          </li>
+        </ul>
+      </li><!-- End customers Nav -->
+      <!-- pending payment nav -->
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="{% url 'add_staff' business.slug %}">
+          <i class="bi bi-person"></i>
+          <span>Pending payment</span>
+        </a>
+      </li><!-- Endpending payment Nav -->
+
+      {% if request.user == business.owner %}
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="{% url 'add_staff' business.slug %}">
+          <i class="bi bi-person"></i>
+          <span>Add Staff</span>
+        </a>
+      </li><!-- End add staff Nav -->
+      {% endif %}
+      {% endif %}
+      
+      {% if request.user.is_authenticated %}
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="{% url 'profile' %}">
+          <i class="bi bi-person"></i>
+          <span>My Profile</span>
+        </a>
+      </li><!-- End Login Page Nav -->
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="{% url 'logout_user' %}">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Logout</span>
+        </a>
+      </li><!-- End Login Page Nav -->
+      {% endif %}
+
+    </ul>
+
+  </aside><!-- End Sidebar-->
+
+  {% block content %}
+  {% endblock %}
+
+  <!-- ======= Footer ======= -->
+  <footer id="footer" class="footer">
+    <div class="copyright">
+      &copy; Copyright <strong><span>{{ business.business_name }}</span></strong>. All Rights Reserved
+    </div>
+    <div class="credits">
+      Powered by <a href="{% url 'index' %}">Jirani Gas Delivery</a>
+    </div>
+  </footer><!-- End Footer -->
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script src="{% static 'assets/vendor/apexcharts/apexcharts.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/chart.js/chart.umd.js' %}"></script>
+  <script src="{% static 'assets/vendor/echarts/echarts.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/quill/quill.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/simple-datatables/simple-datatables.js' %}"></script>
+  <script src="{% static 'assets/vendor/tinymce/tinymce.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
+
+  <!-- Template Main JS File -->
+  <script src="{% static 'assets/js/main.js' %}"></script>
+
+</body>
+
+</html>
