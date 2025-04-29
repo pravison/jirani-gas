@@ -5,6 +5,32 @@ from .models import Product, ProductCategory, ProductName
 from businesses.decorators import team_member_required
 from django.contrib.auth.decorators import login_required
 # Create your views here.
+
+# all products store
+
+def e_store(request):
+    products = Product.objects.all()
+    
+    context={
+        'products':products
+    }
+    return render(request, 'store/e-store.html', context)
+
+# view for pulic estore of business
+
+def business_store(request, slug):
+    business = Business.objects.filter(slug=slug).first()
+    products = Product.objects.filter(business=business).all()
+    staff = Staff.objects.filter(business=business, user=request.user)
+    
+    context={
+        'business': business,
+        'products':products, 
+        'staff' : staff
+    }
+    return render(request, 'store/business-store.html', context)
+
+# model for busineses dashbord
 @login_required(login_url="/accounts/login-user/")
 @team_member_required
 def products(request, slug):
