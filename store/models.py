@@ -8,7 +8,8 @@ class ProductCategory(models.Model):
     def __str__(self):
         return self.category_name
 class ProductName(models.Model):
-    image = models.ImageField(upload_to='gas-images', blank=True, null=True)
+    image = models.ImageField(upload_to='gas-images', blank=True, null=True, help_text='for 6kg gas')
+    second_image = models.ImageField(upload_to='gas-images', blank=True, null=True, help_text='for 13kg gas')
     name = models.CharField(max_length=250)
     def __str__(self):
         return self.name
