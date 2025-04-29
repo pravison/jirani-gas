@@ -1,19 +1,14 @@
 from django.shortcuts import render, redirect
 from django.db.models import Count, Sum, Q, Prefetch, Subquery, OuterRef
-import os
-from django.conf import settings
-from django.http import HttpResponse
-from django.db import transaction
+
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from datetime import datetime, date, timedelta
-from django.contrib.auth.models import User
+from datetime import datetime, date
 import uuid
 from django.utils.text import slugify
 from .models import Business, Staff
 from points.models import LoyaltyPointsCategory, LoyaltyPoint
-from customers.models import Customer, ScanCount
-from store.models import Product
+from customers.models import Customer
 from .decorators import team_member_required
 
 import random
@@ -135,11 +130,6 @@ def customers(request, slug):
     }
     return render(request, 'business/customers.html', context)
 
-def generate_unique_code():
-    while True:
-        code = uuid.uuid4().hex[:6]
-        if not RefferralCode.objects.filter(code=code).exists():
-            return code
         
 
 @login_required(login_url="/accounts/login-user/")

@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>{% block title %} {% endblock%}</title>
+  <title>Jirani Gas{% block title %} {% endblock%}</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
 
@@ -178,12 +178,12 @@
         </a>
         <ul id="components-products-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="{% url 'customers' business.slug %}">
+            <a href="{% url 'products' business.slug %}">
               <i class="bi bi-circle"></i><span>Products</span>
             </a>
           </li>
           <li>
-            <a href="#">
+            <a href="{% url 'add_product' business.slug %}">
               <i class="bi bi-circle"></i><span>Add Productss</span>
             </a>
           </li>
