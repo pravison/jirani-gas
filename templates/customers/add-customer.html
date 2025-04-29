@@ -91,6 +91,18 @@
                         </a>
                             
                     </div>
+                    {% if bussiness_slug %}
+                    <div class="row text-center"> 
+                    <a class="btn btn-primary mt-3" href="{% url 'customers' bussiness_slug %}">
+                       or view customers lists
+                    </a>
+                    </div>
+                    <div class="row text-center" style="width: auto;">
+                        <a class="btn btn-primary mt-3" href="{{request.get_absolute_uri}}">
+                        or add another one
+                        </a>
+                        </div>
+                    {% endif %}
                     {% else %}
                     <div class="row text-center" style="width: auto;">
                     <a class="btn btn-primary mt-3" href="{{request.get_absolute_uri}}">
@@ -106,20 +118,21 @@
                         </div>
                         
                         <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                            Your neighbor will get <b>200 points welcome bonus</b>
+                            Your {% if bussiness_slug %} customer {% else %}neighbor{% endif %} will get <b>200 points welcome bonus</b>
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
+                        {% if not  bussiness_slug %} 
                         <div class="alert alert-warning alert-dismissible fade show" role="alert">
                             And you will be getting 50 points everytime the neighbor refills with us plus you can borrow points from your neighbor
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
-                        
+                        {% endif %}
                         <div class="input-group mb-3">
-                            <input type="text" name="name" class="form-control" id="nameInput"  placeholder="Enter Your Neighbors first Name" required>
+                            <input type="text" name="name" class="form-control" id="nameInput"  placeholder="Enter Your {% if bussiness_slug %} customer's {% else %}neighbor's{% endif %} first Name" required>
                         </div>
                         <div class="input-group mb-3">
                             <span class="input-group-text" id="basic-addon1">+254</span>
-                            <input type="number" name="phone_number" class="form-control" placeholder="ex.740562740 (phone number)" required aria-describedby="basic-addon1">
+                            <input type="number" name="phone_number" class="form-control" placeholder="ex.706420043 (phone number)" required aria-describedby="basic-addon1">
                         </div>
                         <div class="form-group">
                             {% if refferal_code %}
@@ -127,8 +140,10 @@
                             {% endif %}
                             <input type="text" name="refferal_code" class="form-control" id="refferalCodeInput" value="{{refferal_code}}" placeholder="Enter Refferal Code" >
                         </div>
-                        <div class="form-group m-0 btn_g">
-                            <button class="theme_btn btn" type="submit">Save</button>
+                        <div class="row mb-3 text-center">
+                            <div class="col-sm-10 justify-content-center">
+                              <button type="submit" class="btn btn-primary " id="RegisteringAccount">Save</button>
+                            </div>
                         </div>
                     </form>
                 {% endif %}
@@ -146,18 +161,20 @@
 <script>
     // Add an event listener to the form submission
     document.addEventListener('DOMContentLoaded', function () {
-        const loginButton = document.getElementById('loginButton');
-        loginButton.addEventListener('click', function () {
+        const loginButton = document.getElementById('RegisteringAccount');
+        const form = loginButton.closest('form'); // Find the closest form element
+
+        if (form) {
+            form.addEventListener('submit', function () {
                 // Disable the button
                 loginButton.disabled = true;
 
                 // Update the button text
                 loginButton.textContent = "save in progress...";
             });
-
-        
+        }
     });
-</script>
+  </script>
 
 <script>
     function showPopup(event) {

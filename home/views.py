@@ -9,6 +9,8 @@ from businesses.models import Business, Staff
 from points.models import LoyaltyPoint,  BorrowPoint, LoyaltyPointsCategory
 from customers.models import Customer, ScanCount
 from store.models import Product
+
+today = date.today()
 # Create your views here.
 
 
@@ -137,3 +139,16 @@ def profile(request):
     }
     return render(request, 'home/profile.html', context)
 
+
+# admin section
+@login_required(login_url="/accounts/login-user/")
+def all_customers(request):
+    if not request.user.is_staff:
+        messages.success(request, "You dont have permission to access the page")
+        return redirect('profile')
+    customers = Customer.objects.all().order_by('-date_updated')
+    
+    context={
+        'customers':customers
+    }
+    return render(request, 'admin/customers.html', context)

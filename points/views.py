@@ -24,7 +24,6 @@ import json
 from django.core.mail import send_mail
 
 import qrcode
-from PIL import Image, ImageDraw, ImageFont
 
 
 from io import BytesIO
@@ -33,94 +32,71 @@ today = date.today()
 # Create your views here.
 
 # will get rid of this functions points can only be added by staff or automatically programmed
+     
 
 @login_required(login_url="/accounts/login-user/")
-def customer_adding_loyalty_points(request, slug):
-    businesses = Business.objects.filter(owner=request.user)
-    business = Business.objects.filter(slug=slug).first()
-    staff = Staff.objects.filter(business=business, user=request.user).first()
-    loyalty_categories = LoyaltyPointsCategory.objects.filter(business=business)
+def add_loyalty_points_to_customer(request):
+    if not request.user.is_staff:
+        messages.success(request, "You dont have permission to access the page")
+        return redirect('profile')
+    loyalty_categories = LoyaltyPointsCategory.objects.all()
     if request.method == 'POST':
         category_name = request.POST.get('category')
         purchase_value = request.POST.get('purchase_value')
-        customer_email = request.POST.get('customer_email')
+        phone_number = request.POST.get('phone_number')
 
-        loyalty_category = LoyaltyPointsCategory.objects.filter(business=business, category=category_name).first()
+        loyalty_category, created = LoyaltyPointsCategory.objects.get_or_create(category=category_name)
         earned_points = int(int(purchase_value)/int(loyalty_category.total_value_for_a_point))
 
-        user = User.objects.filter(email=customer_email).first()
-        if user :
-            customer = Customer.objects.filter(user=user).first()
-            if customer is not None:
-                business_customer = BusinessCustomer.objects.filter(business=business, customer=customer).first()
-                if business_customer is None:
-                    business_customer = BusinessCustomer.objects.create(business=business, customer = customer)
-                if business.customers.filter(user=user).exists():
-                    LoyaltyPoint.objects.create(
-                        business=business,
-                        customer = customer,
-                        category=loyalty_category,
-                        purchase_value=purchase_value,
-                        points_earned=earned_points,
-                        added_by = f'{request.user.first_name} {request.user.last_name}' 
-                    )
-                    business_customer.total_loyal_points += earned_points
-                    business_customer.save()
-                    messages.success(request, "points added succesfully")
-                else:
-                    business.customers.add(customer)
-                    LoyaltyPoint.objects.create(
-                        business=business,
-                        customer = customer,
-                        category=loyalty_category,
-                        purchase_value=purchase_value,
-                        points_earned=earned_points,
-                        added_by = f'{request.user.first_name} {request.user.last_name}' 
-                    )
-                    business_customer.total_loyal_points += earned_points
-                    business_customer.save()
-                    messages.success(request, "points added succesfully")
-            else:
-                customer = Customer.objects.create(user=user)
-                business.customers.add(customer)
-                business_customer = BusinessCustomer.objects.create(business=business, customer=customer)
+        phone_number =str(254)+str(phone_number)
+        customer = Customer.objects.filter(phone_number=phone_number).first()
+        added_by = f'{request.user.first_name} {request.user.last_name}' if request.user.first_name else f'{request.user.username}'
+        if customer:
+            LoyaltyPoint.objects.create(
+                customer = customer,
+                category=loyalty_category,
+                purchase_value=purchase_value,
+                points_earned=earned_points,
+                added_by = added_by 
+            )
+            customer.total_loyalty_points += earned_points
+            customer.save()
+            if customer.reffered_by is not None:
+                points_category, created = LoyaltyPointsCategory.objects.get_or_create(category='points from refferal sales')
                 LoyaltyPoint.objects.create(
-                    business=business,
-                    customer = customer,
-                    category=loyalty_category,
-                    purchase_value=purchase_value,
-                    points_earned=earned_points,
-                    added_by = f'automatically added' 
+                    customer = customer.reffered_by.customer,
+                    category = points_category or None,
+                    points_earned=int(50), # will rewrite the code to make these part dynamic
+                    points_were = 'earned',
+                    added_by = added_by 
                 )
-                business_customer.total_loyal_points += earned_points
-                business_customer.save()
-                messages.success(request, "points added succesfully")
+
+                customer.reffered_by.customer.total_loyalty_points += 50 # will rewrite the code to make these part dynamic
+                customer.reffered_by.customer.save()
+            messages.success(request, "points added succesfully")
+            return redirect('all_loyalty_points')
         else:
-            messages.success(request, "Customer does not exist send them a link to register first")
+            messages.success(request, "customer does not exists")
+            messages.success(request, "add customer to the database first before adding points or countercheck if phone number is correct")
+            return redirect('add_loyalty_points_to_customer' )
+    
         
-        return redirect('loyalty_points', slug)
 
     context = {
-        'businesses': businesses,
-        'business': business,
-        'staff': staff,
         'loyalty_categories':loyalty_categories
     }
-    return render(request, 'business/customer-adding-loyalty-points.html', context)
+    return render(request, 'admin/add-loyalty-points.html', context)
 
 @login_required(login_url="/accounts/login-user/")
-@team_member_required
-def loyalty_points(request, slug):
+def all_loyalty_points(request):
+    if not request.user.is_staff:
+        messages.success(request, "You dont have permission to access the page")
+        return redirect('profile')
     approve_point_id = request.GET.get('approve_point_id') or ''
-    businesses = Business.objects.filter(owner=request.user)
-    business = Business.objects.filter(slug=slug).first()
-
 
     # a quering the first product
     # will update code to query products dynamically
-    products = Product.objects.filter(business=business).first()
-    staff = Staff.objects.filter(business=business, user=request.user)
-    loyalty_points = LoyaltyPoint.objects.filter(business=business)
+    loyalty_points = LoyaltyPoint.objects.all().order_by('-id')
 
     if approve_point_id !='':
         loyalty_point = loyalty_points.filter(id=approve_point_id).first()
@@ -142,14 +118,12 @@ def loyalty_points(request, slug):
     qr_code_image = base64.b64encode(buffer.getvalue()).decode('utf-8')
     buffer.close()
     context={
-        'businesses': businesses,
-        'business': business,
-        'staff': staff,
         'loyalty_points': loyalty_points,
         'qr_code_image': qr_code_image,
-        'products': products
     }
-    return render(request, 'business/loyalty-points.html', context)
+    return render(request, 'admin/loyalty-points.html', context)
+
+
 
 def loyalty_qr_code(request):
     code_reffered = request.GET.get('referral_code') or '' #code that reffered request.user

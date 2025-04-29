@@ -21,6 +21,7 @@ class Customer(models.Model):
     refferal_code = models.CharField(max_length=8, unique=True)
     reffered_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE, help_text='user who reffered customer', related_name='reffer')
     date_joined = models.DateTimeField(auto_now_add = True)
+    date_updated = models.DateTimeField(auto_now = True)
     def __str__(self):
         return f'{self.user.first_name} {self.user.last_name}' 
     

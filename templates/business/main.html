@@ -152,7 +152,7 @@
       </li><!-- End Dashboard Nav -->
       
       <!-- oders nav -->
-      <li class="nav-item">
+      <!-- <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#components-orders-nav" data-bs-toggle="collapse" href="#">
           <i class="bi bi-people"></i><span>Customers Orders</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
@@ -169,12 +169,13 @@
             </a>
           </li>
         </ul>
-      </li><!-- End orders Nav -->
+      </li> -->
+      <!-- End orders Nav -->
 
       <!-- products nav -->
       <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#components-products-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-people"></i><span>Products</span><i class="bi bi-chevron-down ms-auto"></i>
+          <i class="bi bi-bag"></i><span>Products</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
         <ul id="components-products-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
@@ -208,12 +209,13 @@
         </ul>
       </li><!-- End customers Nav -->
       <!-- pending payment nav -->
-      <li class="nav-item">
+      <!-- <li class="nav-item">
         <a class="nav-link collapsed" href="{% url 'add_staff' business.slug %}">
           <i class="bi bi-person"></i>
           <span>Pending payment</span>
         </a>
-      </li><!-- Endpending payment Nav -->
+      </li> -->
+      <!-- Endpending payment Nav -->
 
       {% if request.user == business.owner %}
       <li class="nav-item">

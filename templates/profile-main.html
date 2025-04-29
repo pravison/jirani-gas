@@ -135,6 +135,20 @@
         </a>
       </li><!-- End Login Page Nav -->
       {% if request.user.is_authenticated %}
+      {% if request.user.is_staff %}
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="{% url 'all_customers' %}">
+          <i class="bi bi-people"></i>
+          <span>Customers</span>
+        </a>
+      </li><!-- End Login Page Nav -->
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="{% url 'add_loyalty_points_to_customer' %}">
+          <i class="bi bi-award"></i>
+          <span>Add Loyalty Points</span>
+        </a>
+      </li><!-- End Login Page Nav -->
+      {% endif %}
       <li class="nav-item">
         <a class="nav-link collapsed" href="{% url 'logout_user' %}">
           <i class="bi bi-box-arrow-right"></i>

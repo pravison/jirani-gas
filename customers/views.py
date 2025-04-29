@@ -51,7 +51,10 @@ def add_customer(request):
         phone_number = str(254)+str(phone_number)
         customer = Customer.objects.filter(phone_number=phone_number).first()
         if  customer:
-            messages.success(request, 'Unfoortunately Neighbor already been added by someone else')
+            if bussiness_slug !='':
+                messages.success(request, 'Unfoortunately customer with that phone number already exists')
+            else:
+                messages.success(request, 'Unfoortunately Neighbor already been added by someone else')
             return redirect(url)
         else:
             customer = Customer.objects.create(
