@@ -42,6 +42,7 @@ def submit_referral(request):
         if not Customer.objects.filter(refferal_code=referral_code).exists():
             customer.refferal_code = referral_code
             customer.save()
+            request.session['shop_patner'] = ''
             return JsonResponse({'message': 'Referral code updated'}, status=200)
         # Example: save to DB or validate
         return JsonResponse({'error': 'Refferal Code Already Taken'}, status=400)
