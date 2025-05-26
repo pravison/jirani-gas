@@ -23,7 +23,8 @@ class Customer(models.Model):
     date_joined = models.DateTimeField(auto_now_add = True)
     date_updated = models.DateTimeField(auto_now = True)
     def __str__(self):
-        return f'{self.user.first_name} {self.user.last_name}' 
+        name = f'{self.user.first_name} {self.user.last_name}' if self.user else self.name
+        return f'{name } - {self.phone_number} - {self.refferal_code}'
     
 class ScanCount(models.Model):
     customer = models.ForeignKey(Customer, blank=True, null=True, on_delete=models.SET_NULL)
