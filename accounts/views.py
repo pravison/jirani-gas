@@ -121,6 +121,7 @@ def register_user(request):
     add_staff_to = request.GET.get('add_staff_to') or ''
     refferal_code = request.GET.get('refferal_code') or ''
     add_customer_to = request.GET.get('add_customer_to') or ''
+    shop_patner = request.GET.get('shop_patner', '') # customer/shops we are patnering with to help get customers
     stored_refferal_code= request.session.get('stored_refferal_code') or '' #  we get both refferal code plus business slug         
     context = {
         'add_staff_to': add_staff_to,
@@ -128,7 +129,11 @@ def register_user(request):
         'pricing_plan': pricing_plan,
         'add_customer_to': add_customer_to,
         'next_url': next_url,
+        'shop_patner' : shop_patner,
     }
+    if shop_patner !='':
+        request.session['shop_patner'] = shop_patner
+
     if refferal_code !='':
         request.session['stored_refferal_code'] = refferal_code
 

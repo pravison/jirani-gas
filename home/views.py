@@ -10,6 +10,11 @@ from points.models import LoyaltyPoint,  BorrowPoint, LoyaltyPointsCategory
 from customers.models import Customer, ScanCount
 from store.models import Product
 
+# views.py
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+
 today = date.today()
 # Create your views here.
 
@@ -22,10 +27,31 @@ def pricing(request):
     return render(request, 'home/pricing.html')
 
 
+@csrf_exempt
+def submit_referral(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        customer_id = data.get('customer_id')
+        referral_code = data.get('referral_code')
+
+        # Add your database logic here
+        customer = Customer.objects.filter(user=request.user).first()
+        if customer is None:
+            return JsonResponse({'error': 'Refferal Code Already Taken'}, status=400)
+
+        if not Customer.objects.filter(refferal_code=referral_code).exists():
+            customer.refferal_code = referral_code
+            customer.save()
+            return JsonResponse({'message': 'Referral code updated'}, status=200)
+        # Example: save to DB or validate
+        return JsonResponse({'error': 'Refferal Code Already Taken'}, status=400)
+        
+    return JsonResponse({'error': 'Refferal Code Already Taken'}, status=400)
+
 
 @login_required(login_url="/accounts/login-user/")
 def profile(request):
-    
+    shop_patner = request.session.get('shop_patner') or ''
     customer = Customer.objects.filter(user=request.user).first()
     if not Customer.objects.filter(user=request.user).exists():
         customer = Customer.objects.create(user=request.user)
@@ -133,7 +159,8 @@ def profile(request):
         'total_points_awaiting_approval':total_points_awaiting_approval,
         'refferd_customers': refferd_customers,
         'borrowed_points': borrowed_points,
-        'loaned_points': loaned_points
+        'loaned_points': loaned_points,
+        'shop_patner': shop_patner,
 
 
     }

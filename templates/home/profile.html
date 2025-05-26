@@ -85,8 +85,16 @@
               <h3 class="text-center">Total Approved Points: {{ total_approved_points|intcomma }}</h3>
               <h3 class="text-center">Total  Points Awaiting Apporoval: {{ total_points_awaiting_approval|intcomma }}</h3>
             </div>
+            {% if shop_patner %}
+            <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
+              <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                  <a class="badge bg-primary" href="#" onclick="submitReferralCode(event, `{{customer.id}}`)" style=" color: white"><b>Create Refferal code</b></a>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            </div>
+            {% endif %}
           </div>
-
+          
         </div>
 
         <div class="col-xl-8">
@@ -388,7 +396,7 @@
           alert('Something went wrong. Please try again.');
       });
   }
-  </script>
+</script>
 
 <!-- script for point repayment -->
 <script>
@@ -438,4 +446,45 @@
   }
 </script>
 
-  {% endblock %}
+<!-- script for selecting a refferal code -->
+
+<script>
+  function submitReferralCode(event, customer_id) {
+      const referralCode = prompt("Enter your preferred referral code:");
+      
+      if (referralCode === null || referralCode.trim() === "") {
+          alert("Referral code cannot be empty.");
+          return;
+      }
+
+      // Send referral code to the backend
+      fetch('/referrals/submit/', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': '{{ csrf_token }}',  // ensure this is available in your Django template context
+          },
+          body: JSON.stringify({
+              customer_id: customer_id,
+              referral_code: referralCode.trim()
+          })
+      })
+      .then(response => {
+          if (!response.ok) {
+              throw new Error('Network response was not ok');
+          }
+          return response.json();
+      })
+      .then(data => {
+          console.log('Success:', data);
+          alert('Referral code submitted successfully.');
+      })
+      .catch(error => {
+          console.error('Error:', error);
+          alert('Failed to submit referral code. Please try again.');
+      });
+  }
+</script>
+
+
+{% endblock %}

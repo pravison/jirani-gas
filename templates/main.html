@@ -46,6 +46,7 @@
                     <li><a href="{% url 'profile' %}" class="theme_btn">profile</a></li>
                     {% else %}
                     <li><a href="{% url 'login_user' %}" class="theme_btn">Sign In</a></li>
+                    <li><a href="{% url 'register_user' %}?shop_patner=patner" class="theme_btn">Patner With Us</a></li>
                     {% endif %}
 
                     <li><a href="{% url 'register_user' %}?pricing_plan=fremium" class="theme_btn">Get Started Today</a></li>
