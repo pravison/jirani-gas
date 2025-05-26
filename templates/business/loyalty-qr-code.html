@@ -9,8 +9,7 @@
             width: 100%;
             border-radius: 5px;
             background: linear-gradient(135deg, #007bff, #ffcc00);
-            padding: 20px;
-            margin-top: 10px;
+            padding: 10px;
             color: white;
             margin: auto;
             text-align: center;
@@ -42,7 +41,7 @@
 
     {% endfor %}
     {% endif %}
-    <div class="pagetitle">
+    <div class="pagetitle" style="margin-bottom: 30px;">
       <h1>{{ business.business_name }}</h1>
       <nav>
         <ol class="breadcrumb">
@@ -52,7 +51,7 @@
     </div><!-- End Page Title -->
 
     <section class="section profile">
-        <div class="row mt-3">
+        <div class="row">
             <div class="container mt-5">
                 <div class="coupon-card" id="couponCardId">
                     <h3 style="color: black;"><b>{{ business.business_name|title }}</b></h3>
