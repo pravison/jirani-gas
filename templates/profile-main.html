@@ -134,6 +134,13 @@
           <span>Invite A Neighbor</span>
         </a>
       </li><!-- End Login Page Nav -->
+      
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="{% url 'refferal_challenge_opportunities' %}">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Challenge Opportunities</span>
+        </a>
+      </li><!-- End Login Page Nav -->
       {% if request.user.is_authenticated %}
       {% if request.user.is_staff %}
       <li class="nav-item">

@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'accounts',
     'points',
     'store',
+    'challenges',
 
     # third party apps
     'tinymce',

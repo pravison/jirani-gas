@@ -1,0 +1,229 @@
+{% extends 'business/main.html' %}
+{% load static %}
+{% load humanize%}
+{% block title %} {{ challenge.challenge_name}} {% endblock%}
+{% block content %}
+<style>
+  .coupon-card {
+      width: 280px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #007bff, #ffcc00);
+      padding: 10px;
+      color: white;
+      margin: auto;
+      text-align: center;
+  }
+  .coupon-code {
+      background-color: white;
+      color: black;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 15px;
+      font-weight: bold;
+  }
+  .qr-code {
+      margin-top: 15px;
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+
+<main id="main" class="main">
+    {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+    {% endif %}
+    <div class="pagetitle">
+      <h1><a style="width: 100%;" href="#" class="mt-1 btn btn-warning mb-1">{{challenge.challenge_type }} Refferal Challenge opportunity</a></h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'refferal_challenge_opportunities' %}">View Challenges</a></li>        
+          <li class="breadcrumb-item"><a href="{% url 'profile' %}">Profile</a></li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section profile">
+      <div class="row">
+        <div class="col-xl-4">
+
+          <div class="card">
+            <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
+              <a style="width: 100%;" href="#" class="mt-1 btn btn-warning mb-1">{{challenge.challenge_type }} opportunity</a>
+              <h2>{{ challenge.challenge_name}}</h2>
+              <p>Challenge Closed: {% if challenge.closed %} Yes {% else %} No {% endif %}</p>
+              {% if participating %}
+                <h4 class="text-center">Your Refferal Code :</span><b> {{customer.refferal_code}} </b></h4>
+                <a class="btn btn-primary mt-3" href="" onclick="showPopup(event, '{{ customer.refferal_code }}')" style=" color: white"><b>Copy the Refferal link and Share with Your Neighbors and friends</b></a>
+                
+              {% else %}
+                <h6>
+                    <a href="{% url 'join_refferal_challenge' challenge.id %}" style="cursor: pointer; color: blue;">join the Challenge</a><br/>
+                    <b class="small fst-italic">and instantly get {{ challenge.participating_reward }} points for shopping, airtime, and offers</b>
+                </h6>
+              {% endif %}
+            </div>
+          </div>
+          
+        </div>
+
+        <div class="col-xl-8">
+
+          <div class="card">
+            <div class="card-body pt-3">
+              <!-- Bordered Tabs -->
+              <ul class="nav nav-tabs nav-tabs-bordered">
+
+                <li class="nav-item">
+                  <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Overview</button>
+                </li>
+
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">Paticipants</button>
+                </li>
+
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-settings"> Winners </button>
+                </li>
+
+              </ul>
+              <div class="tab-content pt-2">
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                the earllier you join and start sharing your refferal link the higher chances you get to win
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% if participating is not None %}
+                <h4 class="text-center">Your Refferal Code :</span><b> {{customer.refferal_code}} </b></h4>
+                <a class="btn btn-primary mt-3" href="" onclick="showPopup(event, '{{ customer.refferal_code }}')" style=" color: white"><b>Copy the Refferal link and Share with Your Neighbors and friends</b></a>
+                {% else %}
+                <h6><a href="{% url 'join_refferal_challenge' challenge.id %}" style="cursor: pointer; color: blue;">join the challenge</a><br/><b class="small fst-italic">and instantly get  {{ challenge.participating_reward}} points for shopping, airtime, and offers</h6>
+                {% endif %}
+                <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                  <h5 class="card-title">{{ challenge.challenge_name}}</h5>
+                  
+                  <p class="small fst-italic">Last Day of Challenge: {{ challenge.end_date}}</p>
+
+                  <h5 class="card-title">Details</h5>
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label">Be in the top {{challenge.target_winners}} and win </div>
+                    <div class="col-lg-9 col-md-8">{{ challenge.challenge_reward|safe}}</div>
+                  </div>
+
+                </div>
+
+                <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
+                  <div class="card-body overflow-auto">
+                          <h5 class="card-title">Participants</h5>
+                          <!-- Table with stripped rows -->
+                          <table class="table datatable">
+                            <thead>
+                              <tr>
+                                <th scope="col">Customers</th>
+                                <th scope="col">Total Refferals</th>
+                                <th scope="col">Earned Points</th>
+                                <th scope="col">Potential Reward</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {% for participant in participants %}
+                              <tr>
+                                <td>{{participant.customer.user.first_name}}</td>
+                                <th>{{ participant.total_refferals|intcomma}}</th>
+                                <th>{{ participant.challenge.participating_reward|intcomma}}</th>
+                                <th>{% if forloop.counter <= participant.challenge.target_winners %} {{ participant.challenge.challenge_reward }}{% else %} - {% endif %} </th>
+                                
+                              </tr>
+                              {% endfor %}
+                              
+                            </tbody>
+                          </table>
+                          <!-- End Table with stripped rows -->
+            
+                        </div>
+                </div>
+
+                <div class="tab-pane fade pt-3" id="profile-settings">
+                  <div class="card-body overflow-auto">
+                          <h5 class="card-title">Winners</h5>
+                          <!-- Table with stripped rows -->
+                          <table class="table datatable">
+                            <thead>
+                              <tr>
+                                <th scope="col">Customers</th>
+                                <th scope="col">Total Refferals</th>
+                                <th scope="col">Earned Points</th>
+                                <th scope="col">Potential Reward</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {% for participant in participants %}
+                              <tr>
+                                <td>{{participant.customer.user.first_name}}</td>
+                                <th>{{ participant.total_refferals|intcomma}}</th>
+                                <th>{{ participant.challenge.participating_reward|intcomma}}</th>
+                                <th>{% if forloop.counter <= participant.challenge.target_winners %} {{ participant.challenge.challenge_reward }}{% else %} - {% endif %} </th>
+                                
+                              </tr>
+                              {% endfor %}
+                              
+                            </tbody>
+                          </table>
+                          <!-- End Table with stripped rows -->
+            
+                        </div>
+              </div><!-- End Bordered Tabs -->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+</main><!-- End #main -->
+<script>
+    function showPopup(event, code) {
+        event.preventDefault(); // Prevent default link behavior
+        
+        const popup = document.getElementById('popup');
+        const shareUrlInput = document.getElementById('share-url');
+        
+        // Construct the referral URL
+        var  url_host = '{{request.get_host}}'
+        var  url_scheme = '{{request.scheme}}'
+
+        const referralUrl = `${url_scheme}://${url_host}/points/loyalty-qr-code/?referral_code=${code}`;
+        
+        console.log(referralUrl)
+        // Set the referral URL in the input field
+        shareUrlInput.value = referralUrl;
+
+        popup.style.display = 'flex'; // Show the popup
+    }
+
+    function closePopup() {
+        const popup = document.getElementById('popup');
+        popup.style.display = 'none'; // Hide the popup
+    }
+
+    function copyToClipboard() {
+        const urlField = document.getElementById('share-url');
+        urlField.select(); // Select the text
+        document.execCommand('copy'); // Copy the text to the clipboard
+        alert('Referral URL copied to clipboard!');
+    }
+</script>
+
+<!-- Popup Modal -->
+<div id="popup" class="popup" style="display:none;">
+    <div class="popup-content">
+        <p>Share this URL:</p>
+        <input type="text" id="share-url" readonly />
+        <button onclick="copyToClipboard()">Copy</button>
+        <button onclick="closePopup()">Close</button>
+    </div>
+</div>
+{% endblock %}

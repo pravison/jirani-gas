@@ -19,6 +19,8 @@ today = date.today()
 # Create your views here.
 
 
+from accounts.views import generate_unique_refferal_code      
+
 # Create your views here.
 def index(request):
     return redirect('loyalty_qr_code')
@@ -54,8 +56,12 @@ def submit_referral(request):
 def profile(request):
     shop_patner = request.session.get('shop_patner') or ''
     customer = Customer.objects.filter(user=request.user).first()
-    if not Customer.objects.filter(user=request.user).exists():
-        customer = Customer.objects.create(user=request.user)
+    if not customer:
+        customer = Customer.objects.create(
+            user=request.user,
+            phone_number=request.user.username, # username is the phone number
+            refferal_code = generate_unique_refferal_code()
+        )
     
     approve_id = request.GET.get('approve_id') or ''
     if approve_id !='':

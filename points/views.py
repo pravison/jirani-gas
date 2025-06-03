@@ -59,20 +59,20 @@ def add_loyalty_points_to_customer(request):
                 points_earned=earned_points,
                 added_by = added_by 
             )
-            customer.total_loyalty_points += earned_points
-            customer.save()
+            
+            #points will be added to customer total points after being approved
             if customer.reffered_by is not None:
                 points_category, created = LoyaltyPointsCategory.objects.get_or_create(category='points from refferal sales')
+                refferer_points_earned  = int(0.3*earned_points) # refferer gets 30% of points customer got
                 LoyaltyPoint.objects.create(
                     customer = customer.reffered_by.customer,
                     category = points_category or None,
-                    points_earned=int(50), # will rewrite the code to make these part dynamic
+                    points_earned=refferer_points_earned,
                     points_were = 'earned',
                     added_by = added_by 
                 )
 
-                customer.reffered_by.customer.total_loyalty_points += 50 # will rewrite the code to make these part dynamic
-                customer.reffered_by.customer.save()
+                #points will be added to customer total points after being approved
             messages.success(request, "points added succesfully")
             return redirect('all_loyalty_points')
         else:
@@ -102,6 +102,9 @@ def all_loyalty_points(request):
         loyalty_point = loyalty_points.filter(id=approve_point_id).first()
         loyalty_point.status = 'approved'
         loyalty_point.save()
+
+        loyalty_point.customer.total_loyalty_points += loyalty_point.points_earned
+        loyalty_point.customer.save()
     
 
     qr_url = f"{request.scheme}://{request.get_host()}/points/loyalty-membership/"  # URL to lock the code
