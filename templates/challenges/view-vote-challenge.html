@@ -1,4 +1,3 @@
-
 {% extends 'business/main.html' %}
 {% load static %}
 {% load humanize%}
@@ -67,10 +66,10 @@
     {% endfor %}
     {% endif %}
     <div class="pagetitle">
-      <h1><a style="width: 100%;" href="#" class="mt-1 btn btn-warning mb-1">{{challenge.challenge_type }} Refferal Challenge opportunity</a></h1>
+      <h1><a style="width: 100%;" href="#" class="mt-1 btn btn-warning mb-1">{% if challenge.challenge_owner %} {{ challenge.challenge_owner }} {% else %} Jirani Mall {% endif %} Challenge opportunity</a></h1>
       <nav>
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'refferal_challenge_opportunities' %}">View Challenges</a></li>        
+          <li class="breadcrumb-item"><a href="{% url 'vote_challenge_opportunities' %}">View Challenges</a></li>       
           <li class="breadcrumb-item"><a href="{% url 'profile' %}">Profile</a></li>
         </ol>
       </nav>
@@ -82,15 +81,14 @@
 
           <div class="card">
             <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
-              <!-- <a style="width: 100%;" href="#" class="mt-1 btn btn-warning mb-1">{{challenge.challenge_type }} opportunity</a> -->
-              <h2 class='text-center'>{{ challenge.challenge_name}}</h2>
+              <!-- <a style="width: 100%;" href="#" class="mt-1 btn btn-warning mb-1">{% if challenge.challenge_owner %} {{ challenge.challenge_owner }} {% else %} Jirani Mall {% endif %}challenge opportunity</a> -->
+              <h2 class="text-center">{{ challenge.challenge_name}}</h2>
               {% if participating %}
-                <h4 class="text-center">Your Refferal Code :</span><b> {{customer.refferal_code}} </b></h4>
-                <a class="btn btn-primary mt-3" href="" onclick="showPopup(event, '{{ customer.refferal_code }}')" style=" color: white"><b>Copy the Refferal link and Share with Your Neighbors and friends</b></a>
+                <a class="btn btn-primary mt-3" href="" onclick="showPopup(event)" style=" color: white"><b>Copy the Link and Share with Your Neighbors and friends</b></a>
                 
               {% else %}
                 <h6>
-                    <a href="{% url 'join_refferal_challenge' challenge.id %}" style="cursor: pointer; color: blue;">join the Challenge</a><br/>
+                    <a href="{% url 'join_vote_challenge' challenge.id %}" style="cursor: pointer; color: blue;">join the Challenge</a><br/>
                     <b class="small fst-italic">and instantly get {{ challenge.participating_reward }} points for shopping, airtime, and offers</b>
                 </h6>
               {% endif %}
@@ -121,14 +119,13 @@
               </ul>
               <div class="tab-content pt-2">
                 <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                the earllier you join and start sharing your refferal link the higher chances you get to win
+                the earllier you join and start sharing your link the higher chances you get to win
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
                 {% if participating is not None %}
-                <h4 class="text-center">Your Refferal Code :</span><b> {{customer.refferal_code}} </b></h4>
                 <a class="btn btn-primary mt-3" href="" onclick="showPopup(event, '{{ customer.refferal_code }}')" style=" color: white"><b>Copy the Refferal link and Share with Your Neighbors and friends</b></a>
                 {% else %}
-                <h6><a href="{% url 'join_refferal_challenge' challenge.id %}" style="cursor: pointer; color: blue;">join the challenge</a><br/><b class="small fst-italic">and instantly get  {{ challenge.participating_reward}} points for shopping, airtime, and offers</h6>
+                <h6><a href="{% url 'join_vote_challenge' challenge.id %}" style="cursor: pointer; color: blue;">join the challenge</a><br/><b class="small fst-italic">and instantly get  {{ challenge.participating_reward}} points for shopping, airtime, and offers</h6>
                 {% endif %}
                 <div class="tab-pane fade show active profile-overview" id="profile-overview">
                   <h5 class="card-title">{{ challenge.challenge_name}}</h5>
@@ -141,10 +138,23 @@
                     <div class="col-lg-9 col-md-8">{{ challenge.challenge_reward|safe}}</div>
                   </div>
                   <div class="row">
+                    <div class="col-lg-3 col-md-4 label">Challenge Brief</div>
+                    <div class="col-lg-9 col-md-8">{{ challenge.challenge_brief|safe}}</div>
+                  </div>
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label">Challenge Host</div>
+                    <div class="col-lg-9 col-md-8">{{ challenge.challenge_owner|safe}}</div>
+                  </div>
+                  <div class="row">
                     <div class="col-lg-3 col-md-4 label">Challenge Closed</div>
                     <div class="col-lg-9 col-md-8"> {% if challenge.closed %} Yes {% else %} No {% endif %}</div>
                   </div>
-                </div>
+                  {% if challenge.challenge_patners %}
+                  <h5 class="card-title">Challenge Patners</h5>
+                    {% for patner in challenge.challenge_patners.all %}
+                    <div class="col-lg-3 col-md-4 label">{{forloop.counter}}. {{patner}}</div>
+                    {% endfor %}
+                  {% endif %}
 
                 <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
                   <div class="card-body overflow-auto">
@@ -154,19 +164,20 @@
                             <thead>
                               <tr>
                                 <th scope="col">Customers</th>
-                                <th scope="col">Total Invites</th>
+                                <th scope="col">Total Votes</th>
                                 <th scope="col">Earned Points</th>
                                 <th scope="col">Potential Reward</th>
+                                <th scope="col">Action</th>
                               </tr>
                             </thead>
                             <tbody>
                               {% for participant in participants %}
                               <tr>
-                                <td>{{participant.customer.user.first_name}}</td>
-                                <th>{{ participant.total_refferals|intcomma}}</th>
+                                <td><a href="{% url 'view_vote_challenge_participant' participant.id %}">{{participant.customer.user.first_name}}</a></td>
+                                <th>{{ participant.total_votes|intcomma}}</th>
                                 <th>{{ participant.challenge.participating_reward|intcomma}}</th>
                                 <th>{% if forloop.counter <= participant.challenge.target_winners %} {{ participant.challenge.challenge_reward }}{% else %} - {% endif %} </th>
-                                
+                                <td><a href="{% url 'view_vote_challenge_participant' participant.id %}">view</a></td>
                               </tr>
                               {% endfor %}
                               
@@ -189,17 +200,18 @@
                           <th scope="col">Total Invites</th>
                           <th scope="col">Earned Points</th>
                           <th scope="col">Reward</th>
+                          <th scope="col">Action</th>
                         </tr>
                       </thead>
                       <tbody>
                         {% for participant in participants %}
                         {% if forloop.counter <= participant.challenge.target_winners %}
                         <tr>
-                          <td>{{participant.customer.user.first_name}}</td>
-                          <th>{{ participant.total_refferals|intcomma}}</th>
-                          <th>{{ participant.challenge.participating_reward|intcomma}}</th>
-                          <th> {{ participant.challenge.challenge_reward }}</th>
-                          
+                        <td><a href="{% url 'view_vote_challenge_participant' participant.id %}">{{participant.customer.user.first_name}}</a></td>
+                        <th>{{ participant.total_votes|intcomma}}</th>
+                        <th>{{ participant.challenge.participating_reward|intcomma}}</th>
+                        <th>{% if forloop.counter <= participant.challenge.target_winners %} {{ participant.challenge.challenge_reward }}{% else %} - {% endif %} </th>
+                        <td><a href="{% url 'view_vote_challenge_participant' participant.id %}">view</a></td>
                         </tr>
                         {% endif %} 
                         {% endfor %}
@@ -228,18 +240,16 @@
 
 </main><!-- End #main -->
 <script>
-    function showPopup(event, code) {
+    function showPopup(event) {
         event.preventDefault(); // Prevent default link behavior
         
         const popup = document.getElementById('popup');
         const shareUrlInput = document.getElementById('share-url');
         
         // Construct the referral URL
-        var  url_host = '{{request.get_host}}'
-        var  url_scheme = '{{request.scheme}}'
+        var  urlLink= '{{ request.build_absolute_uri }}'
+        const referralUrl = `${urlLink}`;
 
-        const referralUrl = `${url_scheme}://${url_host}/points/loyalty-qr-code/?referral_code=${code}`;
-        
         console.log(referralUrl)
         // Set the referral URL in the input field
         shareUrlInput.value = referralUrl;

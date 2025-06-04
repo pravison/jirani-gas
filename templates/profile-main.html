@@ -134,13 +134,26 @@
           <span>Invite A Neighbor</span>
         </a>
       </li><!-- End Login Page Nav -->
-      
       <li class="nav-item">
-        <a class="nav-link collapsed" href="{% url 'refferal_challenge_opportunities' %}">
-          <i class="bi bi-box-arrow-right"></i>
-          <span>Challenge Opportunities</span>
+        <a class="nav-link collapsed" data-bs-target="#challenge-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-journal-text"></i><span>Challenge Opportunities</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-      </li><!-- End Login Page Nav -->
+        <ul id="challenge-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+            
+          <li>
+            <a href="{% url 'refferal_challenge_opportunities' %}">
+              <i class="bi bi-circle"></i><span>Refferal Challenges</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="{% url 'vote_challenge_opportunities' %}">
+              <i class="bi bi-circle"></i><span>Vote Challenges</span>
+            </a>
+          </li>
+        </ul>
+      </li><!-- End Forms Nav -->
+        
       {% if request.user.is_authenticated %}
       {% if request.user.is_staff %}
       <li class="nav-item">
