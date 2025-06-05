@@ -8,5 +8,9 @@ urlpatterns = [
     path('vote-challenge-opportunities/<int:id>/', views.view_vote_challenge, name='view_vote_challenge'),
     path('join-vote-challenge/<int:id>/', views.join_vote_challenge, name='join_vote_challenge'),
     path('view-vote-challenge-participant/<int:id>/', views.view_vote_challenge_participant, name='view_vote_challenge_participant'),
+    path('create-vote-challenge/', views.create_vote_challenge, name='create_vote_challenge'),
+    path('<slug:slug>/business-vote-challenges/', views.business_vote_challenges, name='business_vote_challenges'),
+    path('invite-vote-challenge-patners/', views.invite_vote_challenge_patners, name='invite_vote_challenge_patners'),
+    path('<slug:slug>/challenge-patnership-invite/', views.challenge_patnership_invite, name='challenge_patnership_invite'),
 ]
    

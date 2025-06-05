@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.db.models import Count, Sum, Q, Prefetch, Subquery, OuterRef
+#from django.db.models import Count, Sum, Q, Prefetch, Subquery, OuterRef
 
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -12,11 +12,11 @@ from customers.models import Customer
 from .decorators import team_member_required
 
 import random
-from django.http import JsonResponse
-from django.core.mail import send_mail
+# from django.http import JsonResponse
+# from django.core.mail import send_mail
 
 import qrcode
-from PIL import Image, ImageDraw, ImageFont
+# PIL import Image, ImageDraw, ImageFont
 
 
 from io import BytesIO

@@ -10,7 +10,9 @@ class RefferalChallenge(models.Model):
     participating_reward = models.IntegerField(default=0, help_text='points awarded to customers for participating')
     # challenge_reward_type = models.CharField(max_length=100, choices=(('points', 'points'), ('this week', 'this week'), ('this month', 'this month'), ('this year', 'this year'), ('upto date', 'upto date'))) 
     challenge_reward = models.CharField(max_length=500, help_text='whats the reward for the challenge')
+    challenge_reward_monetary_value = models.IntegerField(default=0)
     challenge_brief = models.TextField(max_length=1500, blank=True, help_text='share a brief about the challenge')
+    challenge_guidelines = models.TextField(max_length=1500, blank=True, help_text='share a brief about the challenge')
     target_winners = models.IntegerField(help_text='how many winners do you want for this challenge')
     closed = models.BooleanField(default=False)
     start_date = models.DateField(auto_now_add=True)
@@ -38,7 +40,9 @@ class VoteChallenge(models.Model):
     challenge_name = models.CharField(max_length=200)
     participating_reward = models.IntegerField(default=0, help_text='points awarded to customers for participating')
     challenge_reward = models.CharField(max_length=500, help_text='whats the reward for the challenge')
+    challenge_reward_monetary_value = models.IntegerField(default=0)
     challenge_brief = models.TextField(max_length=1500, blank=True, help_text='share a brief about the challenge')
+    challenge_guidelines = models.TextField(max_length=1500, blank=True, help_text='share a brief about the challenge')
     target_winners = models.IntegerField(help_text='how many winners do you want for this challenge')
     closed = models.BooleanField(default=False)
     start_date = models.DateField(auto_now_add=True)
@@ -48,6 +52,18 @@ class VoteChallenge(models.Model):
     def __str__(self):
         return self.challenge_name
 
+
+class VoteChallengePartner(models.Model):
+    challenge = models.ForeignKey(VoteChallenge, on_delete=models.CASCADE, related_name="vote_challenges_patners")
+    partner = models.ForeignKey(Business, on_delete=models.CASCADE)
+    accepted = models.BooleanField(default=False)
+    date_invited = models.DateField(auto_now_add=True)
+    date_accepted = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        challenge_owner = self.challenge_owner if self.challenge_owner else 'jirani mall'
+        return f'{challenge_owner}, {self.challenge}, {self.partner}'
+    
 class VoteChallengeParticipant(models.Model):
     challenge = models.ForeignKey(VoteChallenge, on_delete=models.CASCADE, related_name="vote_challenges")
     participant = models.ForeignKey(Customer, on_delete=models.CASCADE)

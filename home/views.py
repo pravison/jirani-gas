@@ -8,9 +8,9 @@ from datetime import date
 from businesses.models import Business, Staff
 from points.models import LoyaltyPoint,  BorrowPoint, LoyaltyPointsCategory
 from customers.models import Customer, ScanCount
-from store.models import Product
+# from store.models import Product
 
-# views.py
+# # views.py
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json

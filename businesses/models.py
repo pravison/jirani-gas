@@ -19,6 +19,7 @@ class Business(models.Model):
     description = models.TextField(blank=True, help_text='describe what you do')
     subscription_plan = models.CharField(max_length=250, blank=True)
     customers = models.ManyToManyField(Customer, blank=True)
+    total_loyalty_points = models.IntegerField(default=0)
     date_joined = models.DateTimeField(auto_now_add = True)
 
     def __str__(self):

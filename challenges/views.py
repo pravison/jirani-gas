@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect
-from django.db.models import Count
+from django.db.models import Count, Q
+
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import RefferalChallenge, RefferalChallengeResult, Vote, VoteChallengeParticipant, VoteChallenge
+from .models import RefferalChallenge, RefferalChallengeResult, Vote, VoteChallengeParticipant, VoteChallenge, VoteChallengePartner
 from points.models import LoyaltyPoint,  LoyaltyPointsCategory
 from customers.models import Customer
+from businesses.models import Business, Staff
 from accounts.views import generate_unique_refferal_code
 # Create your views here.
 def refferal_challenge_opportunities(request):
@@ -196,24 +198,124 @@ def view_vote_challenge_participant(request, id):
 
 #create vote challenge
 
+@login_required(login_url="/accounts/login-user/")
 def create_vote_challenge(request):
-    next_url = request.GET.get('next', '')
-    
+    business_id = request.GET.get('business_id', '')
+
+    business = Business.objects.filter(id=business_id).first()
+    staff = None
+    if business:
+        staff = Staff.objects.filter(business=business, user=request.user).first()
     if request.method == 'POST':
-        phone_number = request.POST['phone_number'] # will install phonenumber and check if number is valid and convert it to international format
-        password = request.POST['password']
+        challenge_name = request.POST['challenge_name'] # will install phonenumber and check if number is valid and convert it to international format
+        participating_reward = request.POST['participating_reward']
+        challenge_reward = request.POST['challenge_reward']
+        challenge_reward_monetary_value = request.POST['challenge_reward_monetary_value']
+        challenge_brief = request.POST['challenge_brief']
+        challenge_guidelines = request.POST['challenge_guidelines']
+        target_winners = request.POST['target_winners']
+        end_date = request.POST['end_date']
         
-        username =str(254)+str(phone_number)
-        user = authenticate(request, username=username, password=password)
+        challenge=VoteChallenge.objects.create(
+            challenge_owner=business, 
+            created_by=staff, 
+            challenge_name=challenge_name, 
+            participating_reward=participating_reward, 
+            challenge_reward=challenge_reward, 
+            challenge_reward_monetary_value=challenge_reward_monetary_value, 
+            challenge_brief=challenge_brief, 
+            challenge_guidelines=challenge_guidelines, 
+            target_winners=target_winners, 
+            end_date=end_date
+            )
         
-        if user is not None:
-            login(request, user)
+        
+        messages.error(request, "Challenge created successfuly.")
+        messages.success(request, "create a poster promoting the challenge")
+        messages.success(request, "invite others businesses to patner and promote this challenge in their stores")
+        return redirect('view_vote_challenge', challenge.id)
+    context= {
+        'business': business,
+        }
+    return render(request, 'challenges/create-vote-challenge.html',  context)
 
-            messages.success(request, 'Welcome, you have been logged in!')
-            return redirect(next_url or 'profile')
-     
-        messages.error(request, "There was an error logging in. Please try again.")
-        messages.success(request, "makesure you enter the correct phone number you signed up with")
-        return redirect('login_user')
+@login_required(login_url="/accounts/login-user/")
+def business_vote_challenges(request, slug):
+    business = Business.objects.filter(slug=slug).first()
+    staff = None
+    if business:
+        staff = Staff.objects.filter(business=business, user=request.user).first()
+    challenges = VoteChallenge.objects.filter(challenge_owner=business).annotate(total_applications=Count('vote_challenges'))
+    context= {
+        'business': business,
+        'challenges': challenges,
+        'staff': staff
+        }
+    return render(request, 'challenges/business-vote-challenge.html',  context)
 
-    return render(request, 'challenges/create-vote-challenge.html', {'next': next_url})
+@login_required(login_url="/accounts/login-user/")
+def invite_vote_challenge_patners(request):
+    business_slug = request.GET.get('business_slug', '')
+    challenge_id = request.GET.get('challenge_id', '')
+    patner_id = request.GET.get('patner_id', '')
+
+    if business_slug == '':
+        return redirect('profile')
+    if challenge_id == '':
+        return redirect('business_vote_challenges', business_slug)
+    
+    businesses = Business.objects.filter(owner=request.user)
+    business = businesses.filter(slug=business_slug).first()
+    if not business:
+        return redirect('profile')
+
+    all_businesses = Business.objects.all().exclude(slug=business_slug)
+    staff = Staff.objects.filter(business=business, user=request.user).first()
+    if not staff:
+        return redirect('profile')
+    challenge = VoteChallenge.objects.filter(id=challenge_id, challenge_owner=business).first()
+    if not challenge:
+        return redirect('business_vote_challenges', business_slug)
+    if patner_id !='':
+        patner = all_businesses.filter(id=patner_id).first()
+        if not patner:
+            messages.success(request, "Business patner does not exist reselect again")
+        else:
+            if VoteChallengePartner.objects.filter(partner=patner).exists():
+                messages.success(request, "Partner Already invited")
+            else:
+                VoteChallengePartner.objects.create(
+                    challenge = challenge,
+                    partner = patner
+                )
+                challenge.challenge_patners.add(patner)
+                challenge.save()
+                messages.success(request, "Initation has been successfull sent")
+                messages.success(request, "Awaiting patner to accept")
+
+
+    context= {
+        'all_businesses': all_businesses,
+        'businesses': businesses,
+        'business': business,
+        'challenge': challenge,
+        'staff': staff
+        }
+    return render(request, 'challenges/patners-page.html',  context)
+
+
+@login_required(login_url="/accounts/login-user/")
+def challenge_patnership_invite(request, slug):
+    business = Business.objects.filter(slug=slug).first()
+    staff = None
+    if business:
+        staff = Staff.objects.filter(business=business, user=request.user).first()
+    partner_challenges = VoteChallengePartner.objects.filter(
+        Q(partner=business) | Q(challenge__challenge_owner=business)
+    )
+    context= {
+        'business': business,
+        'partner_challenges': partner_challenges,
+        'staff': staff
+        }
+    return render(request, 'challenges/challenge-patnership-invite.html',  context)

@@ -31,15 +31,13 @@
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Challenge Opportunities</h1>
+      <h1>Invite Patners</h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{% url 'profile' %}">Profile</a></li>
-          {% if vote_challenge %} 
-          <li class="breadcrumb-item"><a href="{% url 'refferal_challenge_opportunities' %}">Refferal Challenges</a></li>
-          {% else %}
-          <li class="breadcrumb-item"><a href="{% url 'vote_challenge_opportunities' %}">Vote Challenges</a></li>
-          {% endif %}
+          
+          <li class="breadcrumb-item"><a href="{% url 'business_vote_challenges' business.slug %}">Challenges</a></li>
+         
           <li class="breadcrumb-item active">Welcome {% if request.user.is_authenticated %}{{ request.user.first_name }} {{ request.user.last_name }} {% endif %}</li>
         </ol>
       </nav>
@@ -56,25 +54,24 @@
           {% endfor %}
       {% endif %}
       <!-- Card with an image on top -->
-      {% for challenge in challenges %}
+      {% for patner in all_businesses %}
 
       <div class="card  ms-3 col-lg-4" style="padding: 5x;">
-        <a style="width: 100%;" href="#" class="mt-1 btn btn-warning mb-1">{% if vote_challenge %} {% if challenge.challenge_owner %} {{ challenge.challenge_owner }} {% else %} Jirani Mall {% endif %}{% else %} {{challenge.challenge_type }} Refferal {% endif %}Challenge opportunity</a>
-        
         <div class="card-body">
-          <h5 class="card-title" style="margin-bottom :5px;"><b>{{ challenge.challenge_name}} </b><br/><span>start date: <b>{{challenge.start_date}}</b></span><br/><span>end date: <b>{{challenge.end_date}}</b></span><br/><span>target number of winners: <b>{{challenge.target_winners}}</b></span><br/><span>total participants: {{challenge.total_applications}}</span></h5>
-          <h5 class="card-title" style="margin-top: 5px;"><span>Challenge Reward:</span><br/><b>{{challenge.challenge_reward|safe}}</h5>
-          <h5 class="card-title" style="margin-bottom :5px;"><span>You will earn : <b>{{challenge.participating_reward}} points</b> for participating</span></h5>
-          {% if challenge.challenge_patners.first %}
-          <h5 class="card-title" style="margin-bottom :5px;"><b> Patners</b>
-            {% for patner in challenge.challenge_patners.all %}
-            <br/><span> {{patner}}</span>
-            {% endfor %}
+          <h5 class="card-title" style="margin-bottom :5px;"><b>{{ patner.business_name }} </b>
+            <br/><span>Address: {{patner.address}},  {{patner.ward}}, {{patner.location}}, {{patner.county}}, {{patner.country}}</span></h5>
+          <div>
+           <h5 class="card-title" style="margin-bottom :5px;"><b>Business Brief</b>
+            <p><span>{{patner.description|safe}}</span></p>
           </h5> 
-          {% endif %}
+          </div>
         </div>
         <div class="card-body">
-          <a href="{% if vote_challenge %} {% url 'view_vote_challenge' challenge.id %} {% else %}{% url 'view_refferal_challenge' challenge.id %}{% endif %}" class="btn btn-primary">View More</a>
+          {% if patner in challenge.challenge_patners.all %}
+          <a href="{% url 'invite_vote_challenge_patners' %}?business_slug={{business.slug}}&challenge_id={{challenge.id}}&patner_id={{patner.id}}" class="btn btn-primary">Invite</a>
+          {% else %}
+          <span class="btn btn-primary">Already Invited</span>
+          {% endif %}
         </div>
       </div><!-- End Card with an image on top -->
       

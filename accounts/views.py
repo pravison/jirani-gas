@@ -229,6 +229,8 @@ def register_user(request):
     
     return render(request, 'home/register.html', context)
 
+from django.views.decorators.csrf import csrf_exempt
+@csrf_exempt
 def login_user(request):
     next_url = request.GET.get('next', '')
     

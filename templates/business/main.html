@@ -158,17 +158,17 @@
         </a>
         <ul id="components-orders-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="#">
+            <a href="{% url 'business_vote_challenges' business.slug %}">
               <i class="bi bi-circle"></i><span>Challenges</span>
             </a>
           </li>
           <li>
-            <a href="#">
+            <a href="{% url 'challenge_patnership_invite' business.slug %}">
               <i class="bi bi-circle"></i><span>Challenge Patnership</span>
             </a>
           </li>
           <li>
-            <a href="#">
+            <a href="{% url 'create_vote_challenge' %}?business_id={{business.id}}">
               <i class="bi bi-circle"></i><span>Create Challenge</span>
             </a>
           </li>
