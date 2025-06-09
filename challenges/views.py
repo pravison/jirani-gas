@@ -149,6 +149,7 @@ def view_vote_challenge(request, id):
 from django.views.decorators.http import require_POST
 import io
 import os
+import json
 from django.http import JsonResponse
 from django.conf import settings
 from google.oauth2 import service_account
