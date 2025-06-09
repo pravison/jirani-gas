@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+
 import os
 from pathlib import Path
 import environ
@@ -208,3 +209,8 @@ TINYMCE_DEFAULT_CONFIG = {
     'menubar': True,
     'statusbar': True,
 }
+
+#credentials
+
+
+GOOGLE_DRIVE_CREDENTIALS_FILE = os.path.join(BASE_DIR, 'credentials', 'jirani-mall-uploads-51d9d429086f.json')

@@ -68,9 +68,9 @@
         </div>
         <div class="card-body">
           {% if patner in challenge.challenge_patners.all %}
-          <a href="{% url 'invite_vote_challenge_patners' %}?business_slug={{business.slug}}&challenge_id={{challenge.id}}&patner_id={{patner.id}}" class="btn btn-primary">Invite</a>
-          {% else %}
           <span class="btn btn-primary">Already Invited</span>
+          {% else %}
+          <a class="btn btn-primary invite-btn" id="inviteButton-{{ patner.id }}" href="{% url 'invite_vote_challenge_patners' %}?business_slug={{business.slug}}&challenge_id={{challenge.id}}&patner_id={{patner.id}}" class="btn btn-primary">Invite</a>
           {% endif %}
         </div>
       </div><!-- End Card with an image on top -->
@@ -81,6 +81,22 @@
   </section>
 
   </main><!-- End #main -->
+  
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const inviteButtons = document.querySelectorAll('.invite-btn');
+
+        inviteButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                // Disable the button
+                button.classList.add('disabled');
+                button.textContent = "Sending invitation request...";
+            });
+        });
+    });
+</script>
+
 <script>
   function showPopup(event) {
       event.preventDefault(); // Prevent default link behavior

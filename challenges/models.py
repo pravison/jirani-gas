@@ -15,8 +15,8 @@ class RefferalChallenge(models.Model):
     challenge_guidelines = models.TextField(max_length=1500, blank=True, help_text='share a brief about the challenge')
     target_winners = models.IntegerField(help_text='how many winners do you want for this challenge')
     closed = models.BooleanField(default=False)
-    start_date = models.DateField(auto_now_add=True)
-    end_date = models.DateField()
+    start_date = models.DateTimeField(auto_now_add=True)
+    end_date = models.DateTimeField()
     created_by = models.ForeignKey(Staff, blank=True, null=True, on_delete=models.SET_NULL)
     
     def __str__(self):
@@ -45,8 +45,8 @@ class VoteChallenge(models.Model):
     challenge_guidelines = models.TextField(max_length=1500, blank=True, help_text='share a brief about the challenge')
     target_winners = models.IntegerField(help_text='how many winners do you want for this challenge')
     closed = models.BooleanField(default=False)
-    start_date = models.DateField(auto_now_add=True)
-    end_date = models.DateField()
+    start_date = models.DateTimeField(auto_now_add=True)
+    end_date = models.DateTimeField()
     created_by = models.ForeignKey(Staff, blank=True, null=True, on_delete=models.SET_NULL)
     
     def __str__(self):
@@ -61,12 +61,13 @@ class VoteChallengePartner(models.Model):
     date_accepted = models.DateField(auto_now_add=True)
 
     def __str__(self):
-        challenge_owner = self.challenge_owner if self.challenge_owner else 'jirani mall'
+        challenge_owner = self.challenge.challenge_owner if self.challenge.challenge_owner else 'jirani mall'
         return f'{challenge_owner}, {self.challenge}, {self.partner}'
     
 class VoteChallengeParticipant(models.Model):
     challenge = models.ForeignKey(VoteChallenge, on_delete=models.CASCADE, related_name="vote_challenges")
     participant = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    results_image_url = models.URLField(max_length=500, null=True, blank=True)
     total_voters = models.IntegerField(default=0)
     total_votes = models.IntegerField(default=0)
     received_reward = models.CharField(max_length=200, null=True, blank=True)

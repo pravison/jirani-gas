@@ -38,7 +38,7 @@
           {% if vote_challenge %} 
           <li class="breadcrumb-item"><a href="{% url 'refferal_challenge_opportunities' %}">Refferal Challenges</a></li>
           {% else %}
-          <li class="breadcrumb-item"><a href="{% url 'vote_challenge_opportunities' %}">Vote Challenges</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'vote_challenge_opportunities' %}">Creative Challenges</a></li>
           {% endif %}
           <li class="breadcrumb-item active">Welcome {% if request.user.is_authenticated %}{{ request.user.first_name }} {{ request.user.last_name }} {% endif %}</li>
         </ol>

@@ -52,7 +52,7 @@
                   <tr>
                     <th scope="row">{{ partner.partner}}</th>
                     <td>{% if partner.accepted %} <span class="badge bg-success">approved</span>  {% else %} <span class="badge bg-secondary">waiting for approval</span>{% endif %}</td>
-                    <td>{% if not partner.accepted %}<span class="badge bg-warning"><a href="{% url 'invite_vote_challenge_patners' %}?business_slug={{business.slug}}&challenge_id={{challenge.id}}" title='invite' style="color:black;">accept invite</a></span>{% endif %}</td>
+                    <td>{% if partner.partner.id == business.id and not partner.accepted %}<span class="badge bg-warning"><a class="btn btn-warning invite-btn" id="inviteButton-{{ partner.id }}" href="{% url 'challenge_patnership_invite' business.slug %}?challenge_partner_id={{partner.id}}" title='invite' style="color:black;">accept invite</a></span>{% endif %}</td>
                   </tr>
                   {% endfor %}
                   
@@ -68,4 +68,18 @@
     </section>
 
 </main><!-- End #main -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const inviteButtons = document.querySelectorAll('.invite-btn');
+
+        inviteButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                // Disable the button
+                button.classList.add('disabled');
+                button.textContent = "proccessing your request...";
+            });
+        });
+    });
+</script>
 {% endblock %}

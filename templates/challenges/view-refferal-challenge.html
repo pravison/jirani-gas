@@ -83,7 +83,9 @@
           <div class="card">
             <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
               <!-- <a style="width: 100%;" href="#" class="mt-1 btn btn-warning mb-1">{{challenge.challenge_type }} opportunity</a> -->
-              <h2 class='text-center'>{{ challenge.challenge_name}}</h2>
+              <h2 class="text-center">{{ challenge.challenge_name}} challenge</h2>
+              <div id="countdown"></div>
+              <div class="text-center">
               {% if participating %}
                 <h4 class="text-center">Your Refferal Code :</span><b> {{customer.refferal_code}} </b></h4>
                 <a class="btn btn-primary mt-3" href="" onclick="showPopup(event, '{{ customer.refferal_code }}')" style=" color: white"><b>Copy the Refferal link and Share with Your Neighbors and friends</b></a>
@@ -94,6 +96,7 @@
                     <b class="small fst-italic">and instantly get {{ challenge.participating_reward }} points for shopping, airtime, and offers</b>
                 </h6>
               {% endif %}
+              </div>
             </div>
           </div>
           
@@ -269,4 +272,32 @@
         <button onclick="closePopup()">Close</button>
     </div>
 </div>
+
+<script>
+    // Parse the target time from Django
+    const deadline = new Date("{{ last_day|date:'Y-m-d\\TH:i:s' }}");
+
+    function updateCountdown() {
+        const now = new Date();
+        const diff = deadline - now;
+
+        if (diff <= 0) {
+            document.getElementById("countdown").innerText = "Time's up!";
+            clearInterval(timer);
+            return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+
+        document.getElementById("countdown").innerText =
+            `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    updateCountdown(); // Initial call
+    const timer = setInterval(updateCountdown, 1000); // Update every second
+</script>
+
 {% endblock %}

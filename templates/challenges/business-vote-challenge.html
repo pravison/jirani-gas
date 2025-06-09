@@ -53,12 +53,12 @@
                 <tbody>
                   {% for challenge in challenges %}
                   <tr>
-                    <th scope="row">{{ challenge.challenge_name}}</th>
+                    <th scope="row"><a href="{% url 'view_vote_challenge' challenge.id %}" title='view' style="color:black;">{{ challenge.challenge_name}}</a></th>
                     <td>{{ challenge.participating_reward }}</td>
                     <td>{{ challenge.challenge_reward}}; worth ({{challenge.challenge_reward_monetary_value}})</td>
                     <td>{{ challenge.total_applications }}</td>
                     <td>{{ challenge.challenge_patners.all.count }}</td>
-                    <td><span class="badge bg-warning"><a href="{% url 'invite_vote_challenge_patners' %}?business_slug={{business.slug}}&challenge_id={{challenge.id}}" title='invite' style="color:black;">invite patners</a></span></td>
+                    <td><span class="badge bg-warning"><a href="{% url 'invite_vote_challenge_patners' %}?business_slug={{business.slug}}&challenge_id={{challenge.id}}" title='invite' style="color:black;">invite patners</a></span> <span class="badge bg-warning"><a href="{% url 'view_vote_challenge' challenge.id %}" title='view' style="color:black;">view</a></span></td>
                   </tr>
                   {% endfor %}
                   
