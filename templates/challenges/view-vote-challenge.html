@@ -201,7 +201,8 @@
                     <div class="col-lg-3 col-md-4 label">{{forloop.counter}}. {{patner}}</div>
                     {% endfor %}
                   {% endif %}
-
+                </div>
+                
                 <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
                   <div class="card-body overflow-auto">
                           <h5 class="card-title">Participants</h5>
@@ -219,7 +220,7 @@
                             <tbody>
                               {% for participant in participants %}
                               <tr>
-                                <td><a href="{% url 'view_vote_challenge_participant' participant.id %}">{{participant.customer.user.first_name}}</a></td>
+                                <td><a href="{% url 'view_vote_challenge_participant' participant.id %}">{{participant.participant.user.first_name}}</a></td>
                                 <th>{{ participant.total_votes|intcomma}}</th>
                                 <th>{{ participant.challenge.participating_reward|intcomma}}</th>
                                 <th>{% if forloop.counter <= participant.challenge.target_winners %} {{ participant.challenge.challenge_reward }}{% else %} - {% endif %} </th>
@@ -253,7 +254,7 @@
                         {% for participant in participants %}
                         {% if forloop.counter <= participant.challenge.target_winners %}
                         <tr>
-                        <td><a href="{% url 'view_vote_challenge_participant' participant.id %}">{{participant.customer.user.first_name}}</a></td>
+                        <td><a href="{% url 'view_vote_challenge_participant' participant.id %}">{{participant.participant.user.first_name}}</a></td>
                         <th>{{ participant.total_votes|intcomma}}</th>
                         <th>{{ participant.challenge.participating_reward|intcomma}}</th>
                         <th>{% if forloop.counter <= participant.challenge.target_winners %} {{ participant.challenge.challenge_reward }}{% else %} - {% endif %} </th>
@@ -365,10 +366,22 @@
     updateCountdown(); // Initial call
     const timer = setInterval(updateCountdown, 1000); // Update every second
 </script>
+<!-- script to check if user is logged in -->
+ <script>
+    const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+    const loginUrl = "{% url 'login_user' %}";  // Adjust 'login' to your actual login URL name
+</script>
+
 <!-- script for chalenge results upload -->
 <script>
 function showUploadPopup(event, challengeId) {
     event.preventDefault();
+
+    if (!isAuthenticated) {
+        window.location.href = loginUrl + '?next=' + window.location.pathname;
+        return;
+    }
+
     document.getElementById('challenge-id-field').value = challengeId;
     document.getElementById('upload-popup').style.display = 'flex';
     document.getElementById('upload-status').style.display = 'none';
