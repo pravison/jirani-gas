@@ -251,7 +251,7 @@ def join_vote_challenge(request, id):
 
         return JsonResponse({
             'success': True,
-            'redirect_url': f'/challenges/vote-challenge-participant/{joining.id}/'
+            'redirect_url': f'/challenges/view-vote-challenge-participant/{joining.id}/'
         })
 
     except Exception as e:
@@ -262,7 +262,7 @@ def join_vote_challenge(request, id):
 
 def view_vote_challenge_participant(request, id):
     participant = VoteChallengeParticipant.objects.filter(id=id).first()
-    if not participating:
+    if not participant:
         return redirect('vote_challenge_opportunities')
     #check if user is participating in the challenge
     participating = None

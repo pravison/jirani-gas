@@ -76,7 +76,7 @@ class VoteChallengeParticipant(models.Model):
 
     def __str__(self):
 
-        return f'{self.customer} total votes: {self.total_votes}'
+        return f'{self.participant} total votes: {self.total_votes}'
     
 class Vote(models.Model):
     challenge_participant = models.ForeignKey(VoteChallengeParticipant, on_delete=models.CASCADE, related_name="challenge_participant")
