@@ -148,6 +148,7 @@ def view_vote_challenge(request, id):
 
 from django.views.decorators.http import require_POST
 import io
+import os
 from django.http import JsonResponse
 from django.conf import settings
 from google.oauth2 import service_account
@@ -158,11 +159,19 @@ from googleapiclient.http import MediaIoBaseUpload
 def upload_image_to_google_drive(image_file):
     SCOPES = ['https://www.googleapis.com/auth/drive']
     
-    # Load credentials from settings (already defined in .env or settings.py)
-    credentials = service_account.Credentials.from_service_account_file(
-    settings.GOOGLE_DRIVE_CREDENTIALS_FILE,
-    scopes=SCOPES
+    creds_json = os.environ.get("GOOGLE_DRIVE_CREDS_JSON")
+    if not creds_json:
+        raise Exception("GOOGLE_DRIVE_CREDS_JSON not found in environment variables")
+
+    credentials = service_account.Credentials.from_service_account_info(
+        json.loads(creds_json),
+        scopes=SCOPES
     )
+    # Load credentials from settings (already defined in .env or settings.py)
+    # credentials = service_account.Credentials.from_service_account_file(
+    # settings.GOOGLE_DRIVE_CREDENTIALS_FILE,
+    # scopes=SCOPES
+    # )
 
     # Build the Drive API client
     drive_service = build('drive', 'v3', credentials=credentials)
