@@ -19,6 +19,10 @@
                     </div>
                     {% endfor %}
                 {% endif %}
+                <div class="alert alert-warning alert-dismissible fade show text-center role="alert">
+                    login first
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
                 <form class="from_main" action="{% url 'login_user' %}?next={{next}}" method="POST" id="loginForm">
                     {% csrf_token %}
                     <div class="input-group mb-3">
@@ -32,7 +36,7 @@
                     
                     <div class="form-group m-0 btn_g">
                         <button class="theme_btn btn" type="submit" id="loginButton">Login</button>
-                        <a href="{% url 'register_user' %}?next={{next}}">haven't registered - register</a>
+                        <a href="{% url 'register_user' %}?next={{next}}">create account</a>
                     </div>
                     <div class="form-group m-0 btn_g">
                         <a href="{% url 'request_reset_code' %}">forgot Password</a>
