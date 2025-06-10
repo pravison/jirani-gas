@@ -374,15 +374,14 @@
   </footer>
 <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
-
+<script>
+  const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+  const loginUrl = "{% url 'login_user' %}"; // Replace with your actual login URL
+</script>
 <!-- script for chalenge results upload -->
 <script>
     // These variables would typically be defined globally or passed from your Django template context.
     // For this example, assuming they are accessible.
-    const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
-    const loginUrl = "{% url 'login_user' %}"; // Replace with your actual login URL
-    
-
     function castVote(event, totalAvailableVotes, participantId) {
         event.preventDefault();
         if (!isAuthenticated) {
@@ -490,8 +489,10 @@
 
 <div id="upload-popup" class="popup">
     <div class="popup-content">
+        <b>You have <span id="availableVotesDisplay"></span> votes available. <br/>
+          <a class="btn btn-primary" href="#" type="button" onclick="openPurchaseVotesModal(); return false;">Purchase Votes</a>
+        </b>
         <h5>Enter Number of votes you want to cast</h5>
-        <p>You have <span id="availableVotesDisplay"></span> votes available.</p>
         <form id="customUploadForm" enctype="multipart/form-data">
             <input type="hidden" type="number" name="participant_id" id="participant-id-field">
             <input type="number" id="numberOfVotesInput" name="number_of_votes" min="1" required><br><br>
@@ -501,135 +502,202 @@
         <p id="upload-status" style="margin-top: 10px; display: none; color: green;">Uploading...</p>
     </div>
 </div>
+
 
 <!-- script forpurchasing votes -->
 <script>
-    // These variables would typically be defined globally or passed from your Django template context.
-    // For this example, assuming they are accessible.
-    const isAuthenticated = true; // Replace with your actual authentication check
-    const loginUrl = '/login'; // Replace with your actual login URL
 
-    function purchaseVote(event, totalAvailableVotes, participantId) {
-        event.preventDefault();
+/// --- Configuration (unchanged) ---
+const POINTS_PER_VOTE = 10;
 
-        if (!isAuthenticated) {
-            window.location.href = loginUrl + '?next=' + window.location.pathname;
-            return;
-        }
+// --- Global Variable (unchanged) ---
+let customerLoyaltyPointsForPurchase = `{{customer.total_loyalty_points}}`;
 
-        document.getElementById('participant-id-field').value = participantId; // Assuming challengeId is defined elsewhere
-        document.getElementById('upload-popup').style.display = 'flex';
-        document.getElementById('upload-status').style.display = 'none';
-        document.getElementById('submitBtn').disabled = false;
-
-        // Set the available votes display
-        document.getElementById('availableVotesDisplay').textContent = totalAvailableVotes;
-        // Pre-fill the input with the total available votes for convenience
-        document.getElementById('numberOfVotesInput').value = totalAvailableVotes;
-        // Store totalAvailableVotes for client-side validation
-        document.getElementById('numberOfVotesInput').dataset.maxVotes = totalAvailableVotes;
+// --- Modal Control Functions (unchanged) ---
+function openPurchaseVotesModal() {
+    event.preventDefault();
+    if (!isAuthenticated) {
+      window.location.href = loginUrl + '?next=' + window.location.pathname;
+      return;
     }
-
-    function closeUploadPopup() {
-        document.getElementById('upload-popup').style.display = 'none';
+    const availableLoyaltyPointsDisplay = document.getElementById('availableLoyaltyPointsDisplay');
+    if (availableLoyaltyPointsDisplay) {
+        availableLoyaltyPointsDisplay.textContent = customerLoyaltyPointsForPurchase.toLocaleString();
     }
+    const votesToPurchaseInput = document.getElementById('votesToPurchaseInput');
+    const pointsRequiredDisplay = document.getElementById('pointsRequiredDisplay');
+    const purchaseStatus = document.getElementById('purchase-status');
+    const purchaseSubmitBtn = document.getElementById('purchaseSubmitBtn');
 
-    document.addEventListener('DOMContentLoaded', function () {
-        const uploadForm = document.getElementById('customUploadForm');
-        const uploadStatus = document.getElementById('upload-status');
-        const submitBtn = document.getElementById('submitBtn');
-        const numberOfVotesInput = document.getElementById('numberOfVotesInput');
+    if (votesToPurchaseInput) votesToPurchaseInput.value = '';
+    if (pointsRequiredDisplay) pointsRequiredDisplay.textContent = '0';
+    if (purchaseStatus) {
+        purchaseStatus.style.display = 'none';
+        purchaseStatus.textContent = '';
+    }
+    if (purchaseSubmitBtn) purchaseSubmitBtn.disabled = false;
+    const purchaseModal = document.getElementById('purchase-votes-popup');
+    if (purchaseModal) {
+        purchaseModal.style.display = 'flex';
+    }
+}
 
-        if (uploadForm) {
-            uploadForm.addEventListener('submit', function (e) {
-                e.preventDefault();
+function closePurchaseVotesPopup() {
+    const purchaseModal = document.getElementById('purchase-votes-popup');
+    if (purchaseModal) {
+        purchaseModal.style.display = 'none';
+    }
+}
 
-                // Client-side validation for number of votes
-                const enteredVotes = parseInt(numberOfVotesInput.value, 10);
-                const maxAllowedVotes = parseInt(numberOfVotesInput.dataset.maxVotes, 10);
+// --- Dynamic Calculation Function (unchanged) ---
+function calculateRequiredPoints() {
+    const votesInput = document.getElementById('votesToPurchaseInput');
+    const pointsDisplay = document.getElementById('pointsRequiredDisplay');
+    if (!votesInput || !pointsDisplay) return;
+    const votes = parseInt(votesInput.value, 10);
+    if (isNaN(votes) || votes < 1) {
+        pointsDisplay.textContent = '0';
+    } else {
+        pointsDisplay.textContent = (votes * POINTS_PER_VOTE).toLocaleString();
+    }
+}
 
-                if (isNaN(enteredVotes) || enteredVotes <= 0) {
-                    uploadStatus.textContent = 'Please enter a valid number of votes greater than zero.';
-                    uploadStatus.style.display = 'block';
-                    return;
-                }
+// --- Event Listener for Form Submission (UPDATED) ---
 
-                if (enteredVotes > maxAllowedVotes) {
-                    uploadStatus.textContent = `You can only cast a maximum of ${maxAllowedVotes} votes.`;
-                    uploadStatus.style.display = 'block';
-                    return;
-                }
+document.addEventListener('DOMContentLoaded', function () {
+    const purchaseVotesForm = document.getElementById('purchaseVotesForm');
+    const purchaseStatus = document.getElementById('purchase-status');
+    const votesToPurchaseInput = document.getElementById('votesToPurchaseInput');
+    const purchaseSubmitBtn = document.getElementById('purchaseSubmitBtn');
 
+    if (purchaseVotesForm) {
+        purchaseVotesForm.addEventListener('submit', function (e) {
+            e.preventDefault(); // Prevent default form submission
 
-                // Disable submit and show loading
-                submitBtn.disabled = true;
-                uploadStatus.textContent = 'Casting votes...';
-                uploadStatus.style.display = 'block';
+            const votesToPurchase = parseInt(votesToPurchaseInput.value, 10);
+            const pointsRequired = votesToPurchase * POINTS_PER_VOTE;
 
-                const form = e.target;
-                const formData = new FormData(form);
-                const participantId = document.getElementById('participant-id-field').value;
+            // --- Client-side Validation ---
+            if (isNaN(votesToPurchase) || votesToPurchase <= 0) {
+                purchaseStatus.textContent = 'Please enter a valid number of votes (greater than zero).';
+                purchaseStatus.style.color = 'red';
+                purchaseStatus.style.display = 'block';
+                return; // Stop execution if validation fails
+            }
 
-                const csrfToken = getCookie('csrftoken');
+            if (pointsRequired > customerLoyaltyPointsForPurchase) {
+                purchaseStatus.textContent = `You need ${pointsRequired.toLocaleString()} points to purchase ${votesToPurchase} votes, but you only have ${customerLoyaltyPointsForPurchase.toLocaleString()} points.`;
+                purchaseStatus.style.color = 'red';
+                purchaseStatus.style.display = 'block';
+                return; // Stop execution if validation fails
+            }
 
-                fetch(`/challenges/cast-vote-for-participant/${participantId}/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrfToken,
-                    },
-                    body: formData
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            uploadStatus.textContent = 'Votes cast successfully! Redirecting...';
-                            window.location.href = data.redirect_url;
-                        } else {
-                            uploadStatus.textContent = data.error || 'Failed to cast votes.';
-                            submitBtn.disabled = false;
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Voting error:', error);
-                        uploadStatus.textContent = 'An error occurred while casting votes.';
-                        submitBtn.disabled = false;
+            // --- Feedback to User: Disable Button & Show Processing Message ---
+            purchaseSubmitBtn.disabled = true; // Disable the button immediately
+            purchaseStatus.textContent = 'Processing purchase, please wait...';
+            purchaseStatus.style.color = 'blue'; // Use a neutral color for processing
+            purchaseStatus.style.display = 'block';
+
+            // Prepare data for backend (unchanged)
+            const csrfToken = getCookie('csrftoken'); // Assuming getCookie function is available
+            const formData = new FormData();
+            formData.append('votes_to_purchase', votesToPurchase);
+
+            // --- Send purchase request to Backend ---
+            fetch('/challenges/purchase-votes/', { // Ensure this URL matches your Django urls.py
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                },
+                body: formData
+            })
+            .then(response => {
+                // Check if response is OK (status 200-299), then parse JSON
+                if (!response.ok) {
+                    // If response is not ok, read the error message from JSON
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Server error occurred.');
                     });
-            });
-        }
-    });
-
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
                 }
+                return response.json();
+            })
+            .then(data => {
+                // --- Success Handling ---
+                purchaseStatus.textContent = `Successfully purchased ${votesToPurchase} votes!`;
+                purchaseStatus.style.color = 'green';
+
+                // Update the customer's loyalty points if the backend sends it back
+                if (data.new_loyalty_points !== undefined) {
+                    customerLoyaltyPointsForPurchase = data.new_loyalty_points;
+                    document.getElementById('availableLoyaltyPointsDisplay').textContent = customerLoyaltyPointsForPurchase.toLocaleString();
+                }
+
+                // Give the user a moment to see the success message before reloading
+                setTimeout(() => {
+                    window.location.reload(); // Reload the page to reflect updated points and votes
+                }, 1500);
+
+            })
+            .catch(error => {
+                // --- Error Handling ---
+                console.error('Purchase error:', error);
+                purchaseStatus.textContent = error.message || 'An unexpected error occurred during purchase.';
+                purchaseStatus.style.color = 'red';
+                purchaseSubmitBtn.disabled = false; // Re-enable button on error
+            });
+        });
+    }
+});
+
+// --- Utility function: getCookie (Assumed to be available, unchanged) ---
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
             }
         }
-        return cookieValue;
     }
-
+    return cookieValue;
+}
 </script>
 
-<div id="upload-popup" class="popup">
+<div id="purchase-votes-popup" class="popup" style="display: none;">
     <div class="popup-content">
-        <h5>Enter Number of votes you want to cast</h5>
-        <p>You have <span id="availableVotesDisplay"></span> votes available.</p>
-        <form id="customUploadForm" enctype="multipart/form-data">
-            <input type="hidden" type="number" name="participant_id" id="participant-id-field">
-            <input type="number" id="numberOfVotesInput" name="number_of_votes" min="1" required><br><br>
-            <button type="submit" id="submitBtn">Submit</button>
-            <button type="button" onclick="closeUploadPopup()">Close</button>
+        <h5>Purchase More Votes with Loyalty Points</h5>
+        <p>Your available loyalty points: <span id="availableLoyaltyPointsDisplay">{{customer.total_loyalty_points}}</span> points</p>
+        <p>Conversion Rate: <strong>1 Vote = 10 Points</strong></p>
+
+        <form id="purchaseVotesForm" class=" mb-2">
+            <label for="votesToPurchaseInput">Enter Number of votes to purchase:</label><br>
+            <input type="number" id="votesToPurchaseInput" name="votes_to_purchase" min="1" required oninput="calculateRequiredPoints()">
+            <p>Points required: <span id="pointsRequiredDisplay">0</span> points</p>
+            <button type="submit" id="purchaseSubmitBtn">Purchase</button>
+            <button type="button" onclick="closePurchaseVotesPopup()">Close</button>
         </form>
-        <p id="upload-status" style="margin-top: 10px; display: none; color: green;">Uploading...</p>
+        <p id="purchase-status" style="margin-top: 20px; display: none; color: blue;"></p>
+
+        <div class="business-card" style="
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            text-align: center;
+        ">
+            <h4>Our Business Name</h4>
+            <p>Brief description of our amazing business and what we do!</p>
+            <a href="https://www.example.com" target="_blank" style="color: #007bff; text-decoration: none;">Visit Our Website</a>
+        </div>
+        
     </div>
 </div>
 
-
+<!-- script for copying link -->
 <script>
     function showPopup(event) {
         event.preventDefault(); // Prevent default link behavior

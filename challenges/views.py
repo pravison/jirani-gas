@@ -420,6 +420,7 @@ def challenge_patnership_invite(request, slug):
 # from .utils import generate_unique_refferal_code, upload_image_to_google_drive
 
 # --- NEW VIEW FOR CASTING VOTES ---
+
 @login_required(login_url="/accounts/login-user/")
 @require_POST
 def cast_vote_for_participant(request, id):
@@ -503,3 +504,95 @@ def cast_vote_for_participant(request, id):
         import traceback
         traceback.print_exc()
         return JsonResponse({'error': 'An internal server error occurred while processing your vote.'}, status=500)
+    
+@login_required(login_url="/accounts/login-user/")
+@require_POST
+def purchase_votes(request):
+    """
+    Handles the logic for purchasing votes using customer loyalty points.
+
+    Expects 'votes_to_purchase' in the POST data.
+    """
+    # Define the conversion rate
+    POINTS_PER_VOTE = 10 
+
+    customer = Customer.objects.filter(user=request.user).first()
+
+    # If customer profile doesn't exist for a logged-in user, create one.
+    # This scenario is less common for purchasing, as they'd typically have a profile
+    # if they have loyalty points. But it's good for robustness.
+    if not customer:
+        customer = Customer.objects.create(
+            user=request.user,
+            phone_number=request.user.username,
+            refferal_code=generate_unique_refferal_code() # Ensure this utility function exists
+        )
+
+    # 1. Get and Validate Input from POST data (votes to purchase)
+    votes_to_purchase_str = request.POST.get('votes_to_purchase') # Expecting 'votes_to_purchase' from frontend
+
+    if not votes_to_purchase_str:
+        return JsonResponse({'success': False, 'error': 'Number of votes to purchase is required.'}, status=400)
+
+    try:
+        votes_to_purchase = int(votes_to_purchase_str)
+    except ValueError:
+        return JsonResponse({'success': False, 'error': 'Invalid number of votes.'}, status=400)
+
+    if votes_to_purchase <= 0:
+        return JsonResponse({'success': False, 'error': 'Number of votes must be a positive number.'}, status=400)
+
+    # Calculate points required for the purchase
+    points_required = votes_to_purchase * POINTS_PER_VOTE
+
+    # 2. Server-Side Validation: Check if customer has enough loyalty points
+    if customer.total_loyalty_points < points_required:
+        return JsonResponse(
+            {
+                'success': False,
+                'error': f'Insufficient loyalty points. You need {points_required} points to purchase {votes_to_purchase} votes, but you only have {customer.total_loyalty_points} points.'
+            },
+            status=400
+        )
+
+    # 3. Perform Atomic Transaction to update customer's points and votes
+    try:
+        with transaction.atomic():
+            # Deduct loyalty points from the customer
+            customer.total_loyalty_points -= points_required
+            
+            # Add the purchased votes to the customer's available votes
+            customer.total_available_votes += votes_to_purchase
+            customer.save()
+
+            # Optional: Log the loyalty points transaction (if you have a LoyaltyPoint model)
+            # Make sure your LoyaltyPoint model has a 'points_spent' field or similar for deductions
+            category, _ = LoyaltyPointsCategory.objects.get_or_create(
+                category='points spent for votes purchase'
+            )
+            LoyaltyPoint.objects.create(
+                customer=customer,
+                category=category,
+                points_redeemed=points_required, # Assuming this field exists and tracks deductions
+                points_were='redeemed',
+                added_by='automatically during vote purchase'
+            )
+            
+            # Add Django messages for user feedback (optional, if you're using messages framework)
+            messages.success(request, f"Successfully purchased {votes_to_purchase} votes for {points_required} points!")
+            messages.info(request, f"You now have {customer.total_available_votes} votes available and {customer.total_loyalty_points} loyalty points remaining.")
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Successfully purchased {votes_to_purchase} votes for {points_required} points!',
+                'new_loyalty_points': customer.total_loyalty_points, # Send updated points back to frontend
+                'new_available_votes': customer.total_available_votes, # Send updated votes back to frontend# Redirect back or to a suitable page
+            })
+
+    except Exception as e:
+        # Log the exception for debugging purposes
+        import traceback
+        traceback.print_exc()
+        # Return a generic error message to the client
+        return JsonResponse({'success': False, 'error': 'An internal server error occurred while processing your purchase.'}, status=500)
+

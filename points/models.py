@@ -7,7 +7,7 @@ from businesses.models import Staff, Business
 
 
 class LoyaltyPointsCategory(models.Model):
-    category = models.CharField(max_length=100, choices=(('points on purchases made', 'points on purchases made'), ('signup points', 'signup points'), ('points for joining a challenge', 'points for joining a challenge'), ('points on visiting the store', 'points on visiting the store'), ('points from refferal sales', 'points from refferal sales'), ('points on bringing friends to the store', 'points on bringing friends to the store'), ('redeemed', 'redeemed'), ('loaned', 'loaned'), ('borrowed', 'borrowed'), ('repayment of  borrowed points', 'repayment of borrowed points')))
+    category = models.CharField(max_length=100, choices=(('points on purchases made', 'points on purchases made'), ('signup points', 'signup points'), ('points for joining a challenge', 'points for joining a challenge'),('points spent for votes purchase', 'points spent for votes purchase'), ('points on visiting the store', 'points on visiting the store'), ('points from refferal sales', 'points from refferal sales'), ('points on bringing friends to the store', 'points on bringing friends to the store'), ('redeemed', 'redeemed'), ('loaned', 'loaned'), ('borrowed', 'borrowed'), ('repayment of  borrowed points', 'repayment of borrowed points')))
     total_value_for_a_point= models.FloatField(default=10, help_text="what value equals 1 point ex. ksh10 for 1 point")
     updated_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
     def __str__(self):
