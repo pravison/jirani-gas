@@ -495,7 +495,7 @@ def cast_vote_for_participant(request, id):
                 'success': True,
                 'message': f'Successfully cast {number_of_votes} votes for {challenge_participant.participant}!',
                 # Redirect back to the challenge detail page or a success page
-                'redirect_url': f'/challenges/vote_challenge_opportunities/'
+                'redirect_url': f'/challenges/vote-challenge-opportunities/'
             })
 
     except Exception as e:
