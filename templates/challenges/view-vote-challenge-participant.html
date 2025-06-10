@@ -375,19 +375,143 @@
 <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
   
-<!-- <script>
+<script>
     const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
     const loginUrl = "{% url 'login_user' %}";  // Adjust 'login' to your actual login URL name
-</script> -->
+</script>
 
 <!-- script for chalenge results upload -->
- <script>
+<script>
+    // These variables would typically be defined globally or passed from your Django template context.
+    // For this example, assuming they are accessible.
+    if (!isAuthenticated) {
+        window.location.href = loginUrl + '?next=' + window.location.pathname;
+        return;
+    }
+
+    function castVote(event, totalAvailableVotes, participantId) {
+        event.preventDefault();
+
+        document.getElementById('participant-id-field').value = participantId; // Assuming challengeId is defined elsewhere
+        document.getElementById('upload-popup').style.display = 'flex';
+        document.getElementById('upload-status').style.display = 'none';
+        document.getElementById('submitBtn').disabled = false;
+
+        // Set the available votes display
+        document.getElementById('availableVotesDisplay').textContent = totalAvailableVotes;
+        // Pre-fill the input with the total available votes for convenience
+        document.getElementById('numberOfVotesInput').value = totalAvailableVotes;
+        // Store totalAvailableVotes for client-side validation
+        document.getElementById('numberOfVotesInput').dataset.maxVotes = totalAvailableVotes;
+    }
+
+    function closeUploadPopup() {
+        document.getElementById('upload-popup').style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const uploadForm = document.getElementById('customUploadForm');
+        const uploadStatus = document.getElementById('upload-status');
+        const submitBtn = document.getElementById('submitBtn');
+        const numberOfVotesInput = document.getElementById('numberOfVotesInput');
+
+        if (uploadForm) {
+            uploadForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                // Client-side validation for number of votes
+                const enteredVotes = parseInt(numberOfVotesInput.value, 10);
+                const maxAllowedVotes = parseInt(numberOfVotesInput.dataset.maxVotes, 10);
+
+                if (isNaN(enteredVotes) || enteredVotes <= 0) {
+                    uploadStatus.textContent = 'Please enter a valid number of votes greater than zero.';
+                    uploadStatus.style.display = 'block';
+                    return;
+                }
+
+                if (enteredVotes > maxAllowedVotes) {
+                    uploadStatus.textContent = `You can only cast a maximum of ${maxAllowedVotes} votes.`;
+                    uploadStatus.style.display = 'block';
+                    return;
+                }
+
+
+                // Disable submit and show loading
+                submitBtn.disabled = true;
+                uploadStatus.textContent = 'Casting votes...';
+                uploadStatus.style.display = 'block';
+
+                const form = e.target;
+                const formData = new FormData(form);
+                const participantId = document.getElementById('participant-id-field').value;
+
+                const csrfToken = getCookie('csrftoken');
+
+                fetch(`/challenges/cast-vote-for-participant/${participantId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            uploadStatus.textContent = 'Votes cast successfully! Redirecting...';
+                            window.location.href = data.redirect_url;
+                        } else {
+                            uploadStatus.textContent = data.error || 'Failed to cast votes.';
+                            submitBtn.disabled = false;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Voting error:', error);
+                        uploadStatus.textContent = 'An error occurred while casting votes.';
+                        submitBtn.disabled = false;
+                    });
+            });
+        }
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+</script>
+
+<div id="upload-popup" class="popup">
+    <div class="popup-content">
+        <h5>Enter Number of votes you want to cast</h5>
+        <p>You have <span id="availableVotesDisplay"></span> votes available.</p>
+        <form id="customUploadForm" enctype="multipart/form-data">
+            <input type="hidden" type="number" name="participant_id" id="participant-id-field">
+            <input type="number" id="numberOfVotesInput" name="number_of_votes" min="1" required><br><br>
+            <button type="submit" id="submitBtn">Submit</button>
+            <button type="button" onclick="closeUploadPopup()">Close</button>
+        </form>
+        <p id="upload-status" style="margin-top: 10px; display: none; color: green;">Uploading...</p>
+    </div>
+</div>
+
+<!-- script forpurchasing votes -->
+<script>
     // These variables would typically be defined globally or passed from your Django template context.
     // For this example, assuming they are accessible.
     const isAuthenticated = true; // Replace with your actual authentication check
     const loginUrl = '/login'; // Replace with your actual login URL
 
-    function castVote(event, totalAvailableVotes, participantId) {
+    function purchaseVote(event, totalAvailableVotes, participantId) {
         event.preventDefault();
 
         if (!isAuthenticated) {
