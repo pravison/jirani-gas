@@ -16,6 +16,7 @@ class Business(models.Model):
     location = models.CharField(max_length=250)
     ward = models.CharField(max_length=250)
     address = models.TextField(max_length=1000)
+    c = models.URLField(blank=True, null=True)
     description = models.TextField(blank=True, help_text='describe what you do')
     subscription_plan = models.CharField(max_length=250, blank=True)
     customers = models.ManyToManyField(Customer, blank=True)

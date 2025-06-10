@@ -321,6 +321,10 @@
   <a href="https://wa.me/?text={{ request.build_absolute_uri |urlencode }}" target="_blank">WhatsApp</a>|
   <a  href="" onclick="showPopup(event)"><b>Copy</b></a>
   </section>
+  <section class="share">
+  <a href="{% url 'vote_challenge_opportunities' %}" target="_blank">View Challenges</a> |
+  <a href="{% url 'view_vote_challenge' participant.challenge.id %}" target="_blank">Vote For other participants</a> 
+  </section>
 
   <!-- Business Partners Carousel Section -->
 <section class="partners-carousel" style="margin-top: 40px; padding: 20px; background-color: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
@@ -328,33 +332,40 @@
   
   <div id="partnersCarousel" class="carousel slide" data-bs-ride="carousel">
     <div class="carousel-inner">
-      
-      <!-- Partner 1 -->
       <div class="carousel-item active">
         <div class="d-flex justify-content-center align-items-center flex-column">
-          <h4>Partner Name 1</h4>
-          <p class="text-center">A brief description of the business partner goes here. This partner provides amazing services in the industry.</p>
-          <a href="https://www.partner1.com" target="_blank" class="btn btn-primary">Visit Website</a>
+          <h4>{{participant.challenge.challenge_owner}}</h4>
+          <p>
+              {% if participant.challenge.challenge_owner %}
+                  {{ participant.challenge.challenge_owner.description|truncatechars:200 }}
+              {% else %}
+                  Jirani Mall is an e-commerce marketplace where you earn points from every purchase you make.<br/>
+                  You can redeem these points for shopping, airtime, or even cash.
+              {% endif %}
+          </p>
+
+          {% if participant.challenge.challenge_owner %}
+              <b>Visit our shop and earn loyalty for shopping, airtime, or even cash.</b>
+              <a class="btn btn-primary text-white" href="{{ participant.challenge.challenge_owner.google_maps_location_url }}" target="_blank" style="color: #007bff; text-decoration: none;">View Our Shop Location</a>
+          {% else %}
+              <a class="btn btn-primary text-white" href="{% url 'index' %}" target="_blank" style="color: #007bff; text-decoration: none;">Visit Our Page to earn points</a>
+          {% endif %}
         </div>
       </div>
-
-      <!-- Partner 2 -->
+      <!-- Partner 1 -->
+       {% for patner in participant.challenge.challenge_patners.all %}
       <div class="carousel-item">
         <div class="d-flex justify-content-center align-items-center flex-column">
-          <h4>Partner Name 2</h4>
-          <p class="text-center">A brief description of the business partner goes here. They are known for their exceptional products and services.</p>
-          <a href="https://www.partner2.com" target="_blank" class="btn btn-primary">Visit Website</a>
+          <h4>{{patner}}</h4>
+          <p>
+            {{ patner.description|truncatechars:200 }}
+          </p>
+          <b>Visit our shop and earn loyalty for shopping, airtime, or even cash.</b>
+          <a class="btn btn-primary text-white" href="{{ participant.challenge.challenge_owner.google_maps_location_url }}" target="_blank" style="color: #007bff; text-decoration: none;">View Our Shop Location</a>
+          
         </div>
       </div>
-
-      <!-- Partner 3 -->
-      <div class="carousel-item">
-        <div class="d-flex justify-content-center align-items-center flex-column">
-          <h4>Partner Name 3</h4>
-          <p class="text-center">Here’s a short description of Partner 3, an industry leader in their field, providing innovative solutions.</p>
-          <a href="https://www.partner3.com" target="_blank" class="btn btn-primary">Visit Website</a>
-        </div>
-      </div>
+      {% endfor %}
 
     </div>
     <!-- Carousel controls -->
@@ -368,7 +379,6 @@
     </button>
   </div>
 </section>
-
   <footer>
     &copy; 2025 Jirani Mall. All rights reserved. | <a href="#">Terms</a> | <a href="#">Privacy</a>
   </footer>
@@ -689,10 +699,23 @@ function getCookie(name) {
             background-color: #f9f9f9;
             text-align: center;
         ">
-            <h4>Our Business Name</h4>
-            <p>Brief description of our amazing business and what we do!</p>
-            <a href="https://www.example.com" target="_blank" style="color: #007bff; text-decoration: none;">Visit Our Website</a>
-        </div>
+            <h4>Challenge hosted by {% if participant.challenge.challenge_owner %} {{ participant.challenge.challenge_owner.business_name }} {% else %} Jirani Mall {% endif %}</h4>
+          <p>
+              {% if participant.challenge.challenge_owner %}
+                  {{ participant.challenge.challenge_owner.description|truncatechars:200 }}
+              {% else %}
+                  Jirani Mall is an e-commerce marketplace where you earn points from every purchase you make.<br/>
+                  You can redeem these points for shopping, airtime, or even cash.
+              {% endif %}
+          </p>
+
+          {% if participant.challenge.challenge_owner %}
+              <b>Visit our shop and earn loyalty for shopping, airtime, or even cash.</b>
+              <a href="{{ participant.challenge.challenge_owner.google_maps_location_url }}" target="_blank" style="color: #007bff; text-decoration: none;">View Our Shop Location</a>
+          {% else %}
+              <a href="{% url 'index' %}" target="_blank" style="color: #007bff; text-decoration: none;">Visit Our Page to earn points</a>
+          {% endif %}
+          </div>
         
     </div>
 </div>
