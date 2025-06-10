@@ -1,8 +1,12 @@
 from django.shortcuts import render, redirect
 from django.db.models import Count, Q
 from django.utils.timezone import now
-from datetime import datetime, date
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from datetime import date
 from django.contrib import messages
 from .models import RefferalChallenge, RefferalChallengeResult, Vote, VoteChallengeParticipant, VoteChallenge, VoteChallengePartner
 from points.models import LoyaltyPoint,  LoyaltyPointsCategory
@@ -201,7 +205,7 @@ def upload_image_to_google_drive(image_file):
     ).execute()
 
     # Return the public URL of the uploaded file
-    file_url = f"https://drive.google.com/uc?id={file.get('id')}"
+    file_url = f"https://drive.google.com/uc?export=view&id={file.get('id')}"
     return file_url
 
 
@@ -265,10 +269,9 @@ def view_vote_challenge_participant(request, id):
     if not participant:
         return redirect('vote_challenge_opportunities')
     #check if user is participating in the challenge
-    participating = None
     customer = None
-    
-
+    if request.user.is_authenticated:
+        customer = Customer.objects.filter(user=request.user).first()
     context = {
         'customer': customer,
         'participant': participant
@@ -406,3 +409,97 @@ def challenge_patnership_invite(request, slug):
         'staff': staff
         }
     return render(request, 'challenges/challenge-patnership-invite.html',  context)
+
+# Join challenge
+
+
+# Assuming these models are defined in your models.py
+# from .models import Customer, VoteChallenge, VoteChallengeParticipant, LoyaltyPointsCategory, LoyaltyPoint
+
+# Assuming generate_unique_refferal_code and upload_image_to_google_drive are defined elsewhere
+# from .utils import generate_unique_refferal_code, upload_image_to_google_drive
+
+# --- NEW VIEW FOR CASTING VOTES ---
+@login_required(login_url="/accounts/login-user/")
+@require_POST
+def cast_vote_for_participant(request, id):
+    """
+    Handles the logic for casting votes for a specific participant in a vote challenge.
+
+    Arguments:
+        request: The HttpRequest object.
+        id: The ID of the VoteChallengeParticipant.
+
+    Expected POST data:
+        - 'number_of_votes': The integer number of votes the customer wants to cast.
+        - 'participant_id': The ID of the VoteChallengeParticipant being voted for.
+    """
+    # 1. Retrieve Challenge and Customer
+    challenge_participant = get_object_or_404(VoteChallengeParticipant, id=id)
+    customer = Customer.objects.filter(user=request.user).first()
+
+    # If customer profile doesn't exist for a logged-in user, create one.
+    if not customer:
+        customer = Customer.objects.create(
+            user=request.user,
+            phone_number=request.user.username,
+            refferal_code=generate_unique_refferal_code() # Ensure this utility function exists
+        )
+
+    # 2. Get and Validate Input from POST data
+    number_of_votes_str = request.POST.get('number_of_votes')
+    participant_id_str = request.POST.get('participant_id')
+
+    if not number_of_votes_str or not participant_id_str:
+        return JsonResponse({'error': 'Number of votes and participant ID are required.'}, status=400)
+
+    try:
+        number_of_votes = int(number_of_votes_str)
+        participant_pk = int(participant_id_str)
+        participant_pk == id
+    except ValueError:
+        return JsonResponse({'error': 'Invalid number of votes or participant ID.'}, status=400)
+
+    if number_of_votes <= 0:
+        return JsonResponse({'error': 'Number of votes must be a positive number.'}, status=400)
+
+    # 3. Server-Side Validation: Check if customer has enough votes
+    if customer.total_available_votes < number_of_votes:
+        return JsonResponse(
+            {'error': f'You only have {customer.total_available_votes} votes available. You cannot cast {number_of_votes} votes.'},
+            status=400
+        )
+
+    # 5. Perform Atomic Transaction to Update Votes
+    try:
+        with transaction.atomic():
+            # Deduct votes from the casting customer's available votes
+            customer.total_available_votes -= number_of_votes
+            customer.save()
+
+            # Add the cast votes to the target participant's vote count
+            challenge_participant.total_votes += number_of_votes
+            challenge_participant.save()
+
+            # Optional: You might want to record this voting transaction for auditing
+            Vote.objects.create(
+            challenge_participant = challenge_participant,
+            voter = customer,
+            number_of_votes = number_of_votes,
+            date_voted = date.today()
+            )
+            
+            messages.success(request, f"Thanks for supporting {challenge_participant.participant}")
+            messages.success(request, "You can also participate in challenges and win bountiful rewards")
+            return JsonResponse({
+                'success': True,
+                'message': f'Successfully cast {number_of_votes} votes for {challenge_participant.participant}!',
+                # Redirect back to the challenge detail page or a success page
+                'redirect_url': request.META.get('HTTP_REFERER', f'/challenges/vote_challenge_opportunities/')
+            })
+
+    except Exception as e:
+        # Log the exception for debugging purposes
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'error': 'An internal server error occurred while processing your vote.'}, status=500)

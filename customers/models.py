@@ -16,6 +16,7 @@ class Inquiries(models.Model):
 class Customer(models.Model):
     user = models.OneToOneField(User, blank=True, null=True, on_delete=models.SET_NULL)
     name = models.CharField(max_length=250, default='customer')
+    profile_image_url = models.URLField(max_length=500, null=True, blank=True)
     phone_number = models.CharField(max_length=25, null=True, blank=True)
     total_loyalty_points = models.IntegerField(default=0)
     total_available_votes = models.IntegerField(default=10, help_text='this are vote slots that will be used to cast votes for others')
@@ -25,7 +26,7 @@ class Customer(models.Model):
     date_updated = models.DateTimeField(auto_now = True)
     def __str__(self):
         name = f'{self.user.first_name} {self.user.last_name}' if self.user else self.name
-        return f'{name } - {self.phone_number} - {self.refferal_code}'
+        return f'{name }'
     
 class ScanCount(models.Model):
     customer = models.ForeignKey(Customer, blank=True, null=True, on_delete=models.SET_NULL)

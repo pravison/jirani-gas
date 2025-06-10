@@ -12,5 +12,6 @@ urlpatterns = [
     path('<slug:slug>/business-vote-challenges/', views.business_vote_challenges, name='business_vote_challenges'),
     path('invite-vote-challenge-patners/', views.invite_vote_challenge_patners, name='invite_vote_challenge_patners'),
     path('<slug:slug>/challenge-patnership-invite/', views.challenge_patnership_invite, name='challenge_patnership_invite'),
+    path('cast-vote-for-participant/<int:id>/', views.cast_vote_for_participant, name='cast_vote_for_participant'),
 ]
    

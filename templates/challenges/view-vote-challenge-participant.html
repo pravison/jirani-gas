@@ -1,239 +1,513 @@
-{% extends 'business/main.html' %}
+<!DOCTYPE html>
 {% load static %}
-{% load humanize%}
-{% block title %} {{ challenge.challenge_name}} {% endblock%}
-{% block content %}
-<style>
+{% load humanize %}
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Vote For {{participant.participant}}</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link href="{% static 'images/logo.jpg' %}" rel="icon">
+  <link href="{% static 'images/apple-touch-icon.png' %}" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+
+  <!-- Template Main CSS File -->
+  <link href="{% static 'assets/css/style.css' %}" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      color: #333;
+    }
+
+    header {
+      background: #ffffff;
+      padding: 0px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    header img {
+      max-height: 60px;
+    }
+
+    .profile-section {
+      background-color: #fff;
+      padding: 20px;
+      max-width: 98%;
+      margin: 30px auto;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .profile-container {
+      display: flex;
+      align-items: flex-start;
+      margin-top: 20px;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .profile-image {
+      flex: 1 1 100%;
+      text-align: center;
+    }
+
+    .profile-image img {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #e91e63;
+    }
+
+    .profile-name {
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .submission-image {
+      /* flex: 1 1 100%; */
+      position: relative;
+    }
+
+    .submission-caption {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    .submission-image img {
+      width: 100%;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .profile-info {
+      flex: 1 1 100%;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .vote-stats {
+      margin-top: 10px;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .vote-button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 20px;
+      background-color: #e91e63;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    .vote-button:hover {
+      background-color: #c2185b;
+    }
+
+    .share {
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    .share a {
+      margin: 0 10px;
+      text-decoration: none;
+      color: #1da1f2;
+      font-weight: bold;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      font-size: 12px;
+      color: #777;
+    }
+  </style>
+
+  <style>
 .popup {
-    display: none; /* Hidden by default */
-    position: fixed; /* Ensures the popup stays on the screen */
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5); /* Dark overlay */
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 9999; /* Higher z-index to appear on top of other elements */
+    z-index: 9999;
 }
-
-/* Popup content box */
 .popup-content {
-    background: #fff;
+    background: white;
     padding: 20px;
     border-radius: 8px;
+    width: 300px;
     text-align: center;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    max-width: 400px;
-    width: 90%;
-    z-index: 10000; /* Ensures the content box stays above the overlay */
 }
-/* #cc922e */ 
-/* #1563df blue color */
-
-.popup-content input {
-    width: 100%;
-    padding: 8px;
-    margin: 10px 0;
-    text-align: center;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.popup-content button {
-    margin: 5px;
-    padding: 8px 16px;
-    background: #1563df;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.popup-content button:hover {
-    background: #1563df;
-}
-
 </style>
 
-<main id="main" class="main">
-    {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-warning alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-    {% endfor %}
-    {% endif %}
-    <div class="pagetitle">
-      <h1><a style="width: 100%;" href="#" class="mt-1 btn btn-warning mb-1">{% if challenge.challenge_owner %} {{ challenge.challenge_owner }} {% else %} Jirani Mall {% endif %} Challenge opportunity</a></h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'vote_challenge_opportunities' %}">View Challenges</a></li>
-          <li class="breadcrumb-item"><a href="{% url 'vote_challenge_opportunities' %}">View Challenge</a></li>          
-          <li class="breadcrumb-item"><a href="{% url 'profile' %}">Profile</a></li>
-        </ol>
-      </nav>
-    </div><!-- End Page Title -->
+  <style>
+  .popup {
+      display: none; /* Hidden by default */
+      position: fixed; /* Ensures the popup stays on the screen */
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5); /* Dark overlay */
+      justify-content: center;
+      align-items: center;
+      z-index: 9999; /* Higher z-index to appear on top of other elements */
+  }
 
-    <section class="section profile">
-      <div class="row">
-        <div class="col-xl-4">
+  /* Popup content box */
+  .popup-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      max-width: 400px;
+      width: 90%;
+      z-index: 10000; /* Ensures the content box stays above the overlay */
+  }
+  /* #cc922e */ 
+  /* #1563df blue color */
 
-          <div class="card">
-            <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
-              <!-- <a style="width: 100%;" href="#" class="mt-1 btn btn-warning mb-1">{% if challenge.challenge_owner %} {{ challenge.challenge_owner }} {% else %} Jirani Mall {% endif %}challenge opportunity</a> -->
-              <h2 class="text-center">{{ challenge.challenge_name}}</h2>
-              {% if participating %}
-                <a class="btn btn-primary mt-3" href="" onclick="showPopup(event)" style=" color: white"><b>Copy the Link and Share with Your Neighbors and friends</b></a>
-                
-              {% else %}
-                <h6>
-                    <a href="{% url 'join_vote_challenge' challenge.id %}" style="cursor: pointer; color: blue;">join the Challenge</a><br/>
-                    <b class="small fst-italic">and instantly get {{ challenge.participating_reward }} points for shopping, airtime, and offers</b>
-                </h6>
-              {% endif %}
-            </div>
-          </div>
-          
-        </div>
+  .popup-content input {
+      width: 100%;
+      padding: 8px;
+      margin: 10px 0;
+      text-align: center;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+  }
 
-        <div class="col-xl-8">
+  .popup-content button {
+      margin: 5px;
+      padding: 8px 16px;
+      background: #1563df;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+  }
 
-          <div class="card">
-            <div class="card-body pt-3">
-              <!-- Bordered Tabs -->
-              <ul class="nav nav-tabs nav-tabs-bordered">
+  .popup-content button:hover {
+      background: #1563df;
+  }
+  </style>
+</head>
+<body>
+  <header id="header" class="header fixed-top d-flex align-items-center">
+    
+    <div class="d-flex align-items-center justify-content-between">
+      <a href="{% url 'index' %}" class="logo d-flex align-items-center">
+        <img src="{% static 'images/logo.png' %}" alt="">
+        <span class="d-none d-lg-block">Jirani Gas</span>
+      </a>
+      <!-- <i class="bi bi-list toggle-sidebar-btn"></i> -->
+    </div><!-- End Logo -->
 
-                <li class="nav-item">
-                  <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Overview</button>
-                </li>
+    <nav class="header-nav ms-auto">
+      <ul class="d-flex align-items-center">
+        <li class="nav-item d-block d-lg-none">
+          <a class="nav-link nav-icon " href="{% url 'index' %}">
+            <span class="d-lg-block">Jirani Gas</span>
+          </a>
+        </li><!-- End Search Icon-->
+        <li class="nav-item dropdown pe-3">
 
-                <li class="nav-item">
-                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">Paticipants</button>
-                </li>
+          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="" data-bs-toggle="dropdown">
+            <i class="bi bi-person"></i>
+            <span class="d-none d-md-block dropdown-toggle ps-2">{{ request.user.first_name }}</span>
+          </a><!-- End Profile Iamge Icon -->
 
-                <li class="nav-item">
-                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-settings"> Winners </button>
-                </li>
-
-              </ul>
-              <div class="tab-content pt-2">
-                <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                the earllier you join and start sharing your link the higher chances you get to win
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                {% if participating is not None %}
-                <a class="btn btn-primary mt-3" href="" onclick="showPopup(event, '{{ customer.refferal_code }}')" style=" color: white"><b>Copy the Link and Share with Your Neighbors and friends</b></a>
-                {% else %}
-                <h6><a href="{% url 'join_vote_challenge' challenge.id %}" style="cursor: pointer; color: blue;">join the challenge</a><br/><b class="small fst-italic">and instantly get  {{ challenge.participating_reward}} points for shopping, airtime, and offers</h6>
-                {% endif %}
-                <div class="tab-pane fade show active profile-overview" id="profile-overview">
-                  <h5 class="card-title">{{ challenge.challenge_name}}</h5>
-                  
-                  <p class="small fst-italic">Last Day of Challenge: {{ challenge.end_date}}</p>
-
-                  <h5 class="card-title">Details</h5>
-                  <div class="row">
-                    <div class="col-lg-3 col-md-4 label">Be in the top {{challenge.target_winners}} and win </div>
-                    <div class="col-lg-9 col-md-8">{{ challenge.challenge_reward|safe}}</div>
-                  </div>
-                  <div class="row">
-                    <div class="col-lg-3 col-md-4 label">Challenge Brief</div>
-                    <div class="col-lg-9 col-md-8">{{ challenge.challenge_brief|safe}}</div>
-                  </div>
-                  <div class="row">
-                    <div class="col-lg-3 col-md-4 label">Challenge Host</div>
-                    <div class="col-lg-9 col-md-8">{{ challenge.challenge_owner|safe}}</div>
-                  </div>
-                  {% if challenge.challenge_patners %}
-                  <h5 class="card-title">Challenge Patners</h5>
-                    {% for patner in challenge.challenge_patners.all %}
-                    <div class="col-lg-3 col-md-4 label">{{forloop.counter}}. {{patner}}</div>
-                    {% endfor %}
-                  {% endif %}
-
-                <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
-                  <div class="card-body overflow-auto">
-                          <h5 class="card-title">Participants</h5>
-                          <!-- Table with stripped rows -->
-                          <table class="table datatable">
-                            <thead>
-                              <tr>
-                                <th scope="col">Customers</th>
-                                <th scope="col">Total Invites</th>
-                                <th scope="col">Earned Points</th>
-                                <th scope="col">Potential Reward</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {% for participant in participants %}
-                              <tr>
-                                <td>{{participant.customer.user.first_name}}</td>
-                                <th>{{ participant.total_refferals|intcomma}}</th>
-                                <th>{{ participant.challenge.participating_reward|intcomma}}</th>
-                                <th>{% if forloop.counter <= participant.challenge.target_winners %} {{ participant.challenge.challenge_reward }}{% else %} - {% endif %} </th>
-                                
-                              </tr>
-                              {% endfor %}
-                              
-                            </tbody>
-                          </table>
-                          <!-- End Table with stripped rows -->
+          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
             
-                        </div>
-                </div>
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="{% url 'profile' %}">
+                <i class="bi bi-person"></i>
+                <span>My Profile</span>
+              </a>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
 
-                <div class="tab-pane fade pt-3" id="profile-settings">
-                  {% if winners %}
-                  <div class="card-body overflow-auto">
-                    <h5 class="card-title">Winners</h5>
-                    <!-- Table with stripped rows -->
-                    <table class="table datatable">
-                      <thead>
-                        <tr>
-                          <th scope="col">Customers</th>
-                          <th scope="col">Total Invites</th>
-                          <th scope="col">Earned Points</th>
-                          <th scope="col">Reward</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {% for participant in participants %}
-                        {% if forloop.counter <= participant.challenge.target_winners %}
-                        <tr>
-                          <td>{{participant.customer.user.first_name}}</td>
-                          <th>{{ participant.total_refferals|intcomma}}</th>
-                          <th>{{ participant.challenge.participating_reward|intcomma}}</th>
-                          <th> {{ participant.challenge.challenge_reward }}</th>
-                          
-                        </tr>
-                        {% endif %} 
-                        {% endfor %}
-                        
-                      </tbody>
-                    </table>
-                    <!-- End Table with stripped rows -->
-      
-                  </div>
-                  {% else %}
-                  <div class="card-body overflow-auto">
-                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                      Winners havent been announced yet?
-                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                  </div>
-                  {% endif %}
-              </div><!-- End Bordered Tabs -->
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="https://wa.me/254706420043/">
+                <i class="bi bi-question-circle"></i>
+                <span>Need Help?</span>
+              </a>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="{% url 'logout_user' %}">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Sign Out</span>
+              </a>
+            </li>
 
-            </div>
-          </div>
+          </ul><!-- End Profile Dropdown Items -->
+        </li><!-- End Profile Nav -->
 
+      </ul>
+    </nav><!-- End Icons Navigation -->
+
+  </header><!-- End Header -->
+
+
+  <section class="profile-section">
+    <div class="profile-container">
+      <div class="col-xl-4  profile-image">
+        <div>
+          <img src="{% if participant.participant.profile_image_url %} {{participant.participant.profile_image_url}} {% else %}{% static 'images/profile.png' %} {% endif %}" alt="User Profile">
+          <div class="profile-name">{{participant.participant}}</div>
         </div>
       </div>
-    </section>
+      <div class="col-xl-12 text-center">
+        {% if participant.results_image_url %}
+        <div class="submission-image">
+          <div class="submission-caption">Help my creativity win the {{ participant.challenge.challenge_name}} challenge!</div>
+          <img src="{{participant.results_image_url}}" alt="Submitted Challenge Image">
+        </div>
+        {% endif %}
+        <div class="profile-info">
+          <div class="vote-stats">
+            <p><strong>Current Votes:</strong> {{participant.total_votes|intcomma}}</p>
+            <!-- <p><strong>Current Position:</strong> #2</p> -->
+            <p>Help {{participant.participant}} win the {{ participant.challenge.challenge_name}} challenge by casting your vote. Your support matters!</p>
+          </div>
+          <button class="vote-button" onclick="castVote(event, `{{customer.total_available_votes}}`, `{{participant.id}}`)">VOTE FOR {{participant.participant|upper}}</button>
+        </div>
+      </div>
+    </div>
+  </section>
 
-</main><!-- End #main -->
+  <section class="share">
+    Share this challenge: 
+    <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri|urlencode }}" target="_blank">Twitter</a> |
+  <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri |urlencode }}" target="_blank">Facebook</a> |
+  <a href="https://wa.me/?text={{ request.build_absolute_uri |urlencode }}" target="_blank">WhatsApp</a>|
+  <a  href="" onclick="showPopup(event)"><b>Copy</b></a>
+  </section>
+
+  <!-- Business Partners Carousel Section -->
+<section class="partners-carousel" style="margin-top: 40px; padding: 20px; background-color: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+  <h3 class="text-center mb-4">Our Business Partners</h3>
+  
+  <div id="partnersCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner">
+      
+      <!-- Partner 1 -->
+      <div class="carousel-item active">
+        <div class="d-flex justify-content-center align-items-center flex-column">
+          <h4>Partner Name 1</h4>
+          <p class="text-center">A brief description of the business partner goes here. This partner provides amazing services in the industry.</p>
+          <a href="https://www.partner1.com" target="_blank" class="btn btn-primary">Visit Website</a>
+        </div>
+      </div>
+
+      <!-- Partner 2 -->
+      <div class="carousel-item">
+        <div class="d-flex justify-content-center align-items-center flex-column">
+          <h4>Partner Name 2</h4>
+          <p class="text-center">A brief description of the business partner goes here. They are known for their exceptional products and services.</p>
+          <a href="https://www.partner2.com" target="_blank" class="btn btn-primary">Visit Website</a>
+        </div>
+      </div>
+
+      <!-- Partner 3 -->
+      <div class="carousel-item">
+        <div class="d-flex justify-content-center align-items-center flex-column">
+          <h4>Partner Name 3</h4>
+          <p class="text-center">Here’s a short description of Partner 3, an industry leader in their field, providing innovative solutions.</p>
+          <a href="https://www.partner3.com" target="_blank" class="btn btn-primary">Visit Website</a>
+        </div>
+      </div>
+
+    </div>
+    <!-- Carousel controls -->
+    <button class="carousel-control-prev" type="button" data-bs-target="#partnersCarousel" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#partnersCarousel" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Next</span>
+    </button>
+  </div>
+</section>
+
+  <footer>
+    &copy; 2025 Challenge Awards. All rights reserved. | <a href="#">Terms</a> | <a href="#">Privacy</a>
+  </footer>
+<a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  
+<!-- <script>
+    const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+    const loginUrl = "{% url 'login_user' %}";  // Adjust 'login' to your actual login URL name
+</script> -->
+
+<!-- script for chalenge results upload -->
+ <script>
+    // These variables would typically be defined globally or passed from your Django template context.
+    // For this example, assuming they are accessible.
+    const isAuthenticated = true; // Replace with your actual authentication check
+    const loginUrl = '/login'; // Replace with your actual login URL
+
+    function castVote(event, totalAvailableVotes, participantId) {
+        event.preventDefault();
+
+        if (!isAuthenticated) {
+            window.location.href = loginUrl + '?next=' + window.location.pathname;
+            return;
+        }
+
+        document.getElementById('participant-id-field').value = participantId; // Assuming challengeId is defined elsewhere
+        document.getElementById('upload-popup').style.display = 'flex';
+        document.getElementById('upload-status').style.display = 'none';
+        document.getElementById('submitBtn').disabled = false;
+
+        // Set the available votes display
+        document.getElementById('availableVotesDisplay').textContent = totalAvailableVotes;
+        // Pre-fill the input with the total available votes for convenience
+        document.getElementById('numberOfVotesInput').value = totalAvailableVotes;
+        // Store totalAvailableVotes for client-side validation
+        document.getElementById('numberOfVotesInput').dataset.maxVotes = totalAvailableVotes;
+    }
+
+    function closeUploadPopup() {
+        document.getElementById('upload-popup').style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const uploadForm = document.getElementById('customUploadForm');
+        const uploadStatus = document.getElementById('upload-status');
+        const submitBtn = document.getElementById('submitBtn');
+        const numberOfVotesInput = document.getElementById('numberOfVotesInput');
+
+        if (uploadForm) {
+            uploadForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                // Client-side validation for number of votes
+                const enteredVotes = parseInt(numberOfVotesInput.value, 10);
+                const maxAllowedVotes = parseInt(numberOfVotesInput.dataset.maxVotes, 10);
+
+                if (isNaN(enteredVotes) || enteredVotes <= 0) {
+                    uploadStatus.textContent = 'Please enter a valid number of votes greater than zero.';
+                    uploadStatus.style.display = 'block';
+                    return;
+                }
+
+                if (enteredVotes > maxAllowedVotes) {
+                    uploadStatus.textContent = `You can only cast a maximum of ${maxAllowedVotes} votes.`;
+                    uploadStatus.style.display = 'block';
+                    return;
+                }
+
+
+                // Disable submit and show loading
+                submitBtn.disabled = true;
+                uploadStatus.textContent = 'Casting votes...';
+                uploadStatus.style.display = 'block';
+
+                const form = e.target;
+                const formData = new FormData(form);
+                const participantId = document.getElementById('participant-id-field').value;
+
+                const csrfToken = getCookie('csrftoken');
+
+                fetch(`/challenges/cast-vote-for-participant/${participantId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            uploadStatus.textContent = 'Votes cast successfully! Redirecting...';
+                            window.location.href = data.redirect_url;
+                        } else {
+                            uploadStatus.textContent = data.error || 'Failed to cast votes.';
+                            submitBtn.disabled = false;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Voting error:', error);
+                        uploadStatus.textContent = 'An error occurred while casting votes.';
+                        submitBtn.disabled = false;
+                    });
+            });
+        }
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+</script>
+
+<div id="upload-popup" class="popup">
+    <div class="popup-content">
+        <h5>Enter Number of votes you want to cast</h5>
+        <p>You have <span id="availableVotesDisplay"></span> votes available.</p>
+        <form id="customUploadForm" enctype="multipart/form-data">
+            <input type="hidden" name="participant-id" id="participant-id-field">
+            <input type="number" id="numberOfVotesInput" name="number_of_votes" min="1" required><br><br>
+            <button type="submit" id="submitBtn">Submit</button>
+            <button type="button" onclick="closeUploadPopup()">Close</button>
+        </form>
+        <p id="upload-status" style="margin-top: 10px; display: none; color: green;">Uploading...</p>
+    </div>
+</div>
+
+
 <script>
     function showPopup(event) {
         event.preventDefault(); // Prevent default link behavior
@@ -242,8 +516,9 @@
         const shareUrlInput = document.getElementById('share-url');
         
         // Construct the referral URL
-        var  urlLink= '{{ request.build_absolute_uri }}'
-        const referralUrl = `${urlLink}`;
+        var  currrent_url= '{{request.build_absolute_uri}}'
+
+        const referralUrl = `${currrent_url}`;
         
         console.log(referralUrl)
         // Set the referral URL in the input field
@@ -274,4 +549,13 @@
         <button onclick="closePopup()">Close</button>
     </div>
 </div>
-{% endblock %}
+
+
+  <!-- Vendor JS Files -->
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+  <!-- Template Main JS File -->
+  <script src="{% static 'assets/js/main.js' %}"></script>
+</body>
+</html>
+
