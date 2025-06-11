@@ -596,3 +596,47 @@ def purchase_votes(request):
         # Return a generic error message to the client
         return JsonResponse({'success': False, 'error': 'An internal server error occurred while processing your purchase.'}, status=500)
 
+
+# Q & A challenge view
+from .models import Topic, Subtopic, Question, Choice, QuestionandAnswerChallenge, Group, GroupMembership, Participant, Answer, results
+# def join_challenge(request, challenge_id):
+#     challenge = get_object_or_404(QuestionandAnswerChallenge, id=challenge_id)
+#     customer = request.user.customer
+
+#     # Check if already participating
+#     if Participant.objects.filter(challenge=challenge, customer=customer).exists():
+#         return Response({'message': 'Already joined'}, status=400)
+
+#     # Check group requirement
+#     if challenge.requires_group:
+#         return Response({'message': 'This challenge requires a group. Join or create one first.'}, status=400)
+
+#     participant = Participant.objects.create(
+#         customer=customer,
+#         challenge=challenge,
+#         session_token=uuid.uuid4().hex
+#     )
+
+#     return Response({'message': 'Joined challenge', 'token': participant.session_token})
+
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def join_group(request, challenge_id, group_id):
+#     challenge = get_object_or_404(QuestionandAnswerChallenge, id=challenge_id)
+#     group = get_object_or_404(Group, id=group_id, challenge=challenge)
+#     customer = request.user.customer
+
+#     # Check if already in group
+#     if GroupMembership.objects.filter(group=group, customer=customer).exists():
+#         return Response({'message': 'Already in group'}, status=400)
+
+#     if customer.points < 50:
+#         return Response({'message': 'Not enough points to join group'}, status=400)
+
+#     # Deduct fee and join
+#     customer.points -= 50
+#     customer.save()
+
+#     GroupMembership.objects.create(group=group, customer=customer, paid_fee=True)
+
+#     return Response({'message': f'Joined group {group.name}'})
