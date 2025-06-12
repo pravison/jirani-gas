@@ -159,7 +159,7 @@ class GroupMembership(models.Model):
     paid_fee = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ('group', 'user')
+        unique_together = ('group', 'customer')
 
 class Participant(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)

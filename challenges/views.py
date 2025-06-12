@@ -598,7 +598,7 @@ def purchase_votes(request):
 
 
 # Q & A challenge view
-from .models import Topic, Subtopic, Question, Choice, QuestionandAnswerChallenge, Group, GroupMembership, Participant, Answer, results
+from .models import Topic, Subtopic, Question, Choice, QuestionandAnswerChallenge, Group, GroupMembership, Participant, Answer, Result
 # def join_challenge(request, challenge_id):
 #     challenge = get_object_or_404(QuestionandAnswerChallenge, id=challenge_id)
 #     customer = request.user.customer
