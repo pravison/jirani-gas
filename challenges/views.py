@@ -640,3 +640,119 @@ from .models import Topic, Subtopic, Question, Choice, QuestionandAnswerChalleng
 #     GroupMembership.objects.create(group=group, customer=customer, paid_fee=True)
 
 #     return Response({'message': f'Joined group {group.name}'})
+
+@login_required(login_url="/accounts/login-user/")
+def create_qna_challenge(request):
+    business_id = request.GET.get('business_id', '')
+    business = Business.objects.filter(id=business_id).first()
+    staff = None
+    if business:
+        staff = Staff.objects.filter(business=business, user=request.user).first()
+
+    subtopics = Subtopic.objects.prefetch_related('questions').all()
+
+    if request.method == 'POST':
+        title = request.POST['title']
+        subtopic_id = request.POST['subtopic']
+        duration_seconds = request.POST['duration_seconds']
+        type = request.POST['type']
+        requires_group = 'requires_group' in request.POST
+        challenge_reward = request.POST['challenge_reward']
+        challenge_reward_monetary_value = request.POST['challenge_reward_monetary_value']
+        challenge_brief = request.POST['challenge_brief']
+        challenge_guidelines = request.POST['challenge_guidelines']
+        target_winners = request.POST['target_winners']
+        end_date = request.POST['end_date']
+        start_time = request.POST.get('start_time')
+
+        challenge = QuestionandAnswerChallenge.objects.create(
+            business=business,
+            subtopic_id=subtopic_id,
+            title=title,
+            duration_seconds=duration_seconds,
+            type=type,
+            requires_group=requires_group,
+            challenge_reward=challenge_reward,
+            challenge_reward_monetary_value=challenge_reward_monetary_value,
+            challenge_brief=challenge_brief,
+            challenge_guidelines=challenge_guidelines,
+            target_winners=target_winners,
+            end_date=end_date,
+            start_time=start_time if type == 'live' else None
+        )
+
+        messages.success(request, "Challenge created successfully.")
+        return redirect('view_qna_challenge', challenge.id)
+
+    context = {
+        'business': business,
+        'subtopics': subtopics,
+    }
+    return render(request, 'challenges/create-qna-challenge.html', context)
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from .models import QuestionandAnswerChallenge, Participant, Result, Group, GroupMembership, Customer
+
+# List all QnA challenges
+def qna_challenge_list(request):
+    challenges = QuestionandAnswerChallenge.objects.all().order_by('-created_at')
+    return render(request, 'challenges/qna_challenge_list.html', {'challenges': challenges})
+
+
+# View specific challenge with details
+@login_required
+def view_qna_challenge(request, challenge_id):
+    challenge = get_object_or_404(QuestionandAnswerChallenge, pk=challenge_id)
+
+    customer = request.user.customer
+    participant = Participant.objects.filter(customer=customer, challenge=challenge).first()
+    participants = Participant.objects.filter(challenge=challenge).select_related('customer')
+
+    winners = Result.objects.filter(
+        participant__challenge=challenge
+    ).order_by('-total_score')[:challenge.target_winners]
+
+    context = {
+        'challenge': challenge,
+        'participants': participants,
+        'participating': participant,
+        'customer': customer,
+        'winners': winners,
+    }
+
+    return render(request, 'challenges/view_qna_challenge.html', context)
+
+
+# Join challenge view
+@login_required
+def join_qna_challenge(request, challenge_id):
+    challenge = get_object_or_404(QuestionandAnswerChallenge, pk=challenge_id)
+    customer = request.user.customer
+
+    # Ensure customer hasn't already joined
+    if Participant.objects.filter(customer=customer, challenge=challenge).exists():
+        return redirect('view_qna_challenge', challenge_id=challenge.id)
+
+    # Optionally handle group logic here
+    participant = Participant.objects.create(
+        customer=customer,
+        challenge=challenge,
+        session_token=f"{customer.id}-{timezone.now().timestamp()}"
+    )
+    return redirect('view_qna_challenge', challenge_id=challenge.id)
+
+
+# View individual participant performance
+@login_required
+def view_qna_participant(request, participant_id):
+    participant = get_object_or_404(Participant, pk=participant_id)
+    result = Result.objects.filter(participant=participant).first()
+    answers = participant.answer_set.select_related('question', 'choice')
+
+    return render(request, 'challenges/view_qna_participant.html', {
+        'participant': participant,
+        'result': result,
+        'answers': answers,
+    })

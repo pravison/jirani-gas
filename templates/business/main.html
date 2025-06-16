@@ -169,7 +169,12 @@
           </li>
           <li>
             <a href="{% url 'create_vote_challenge' %}?business_id={{business.id}}">
-              <i class="bi bi-circle"></i><span>Create Challenge</span>
+              <i class="bi bi-circle"></i><span>Create a Creative Challenge</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'create_qna_challenge' %}?business_id={{ business.id }}">
+              <i class="bi bi-circle"></i><span>Create Q&A Challenge</span>
             </a>
           </li>
         </ul>

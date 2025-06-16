@@ -108,7 +108,7 @@ class Subtopic(models.Model):
 
 
 class Question(models.Model):
-    subtopic = models.ForeignKey(Subtopic, on_delete=models.CASCADE)
+    subtopic = models.ForeignKey(Subtopic, on_delete=models.CASCADE, related_name='questions')
     text = models.TextField()
     order = models.PositiveIntegerField()
 
@@ -136,7 +136,14 @@ class QuestionandAnswerChallenge(models.Model):
     title = models.CharField(max_length=255)
     duration_seconds = models.IntegerField(default=20)
     requires_group = models.BooleanField(default=False)
+    challenge_reward = models.CharField(max_length=500, help_text='whats the reward for the challenge')
+    challenge_reward_monetary_value = models.IntegerField(default=0)
+    challenge_brief = models.TextField(max_length=1500, blank=True, help_text='share a brief about the challenge')
+    challenge_guidelines = models.TextField(max_length=1500, blank=True, help_text='share a brief about the challenge')
+    target_winners = models.IntegerField(help_text='how many winners do you want for this challenge')
+    end_date = models.DateTimeField()
     start_time = models.DateTimeField(null=True, blank=True)  # only for live
+    closed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.title

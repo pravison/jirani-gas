@@ -1,0 +1,165 @@
+{% extends 'business/main.html' %}
+{% load static %}
+{% load humanize %}
+{% block title %}{{ challenge.title }}{% endblock %}
+{% block content %}
+<style>
+  .popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+
+  .popup-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+  }
+</style>
+
+<main id="main" class="main">
+  <div class="pagetitle">
+    <h1>{{ challenge.title }} - Quiz Challenge</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'view_all_qna_challenges' %}">All Challenges</a></li>
+        <li class="breadcrumb-item active">View Challenge</li>
+      </ol>
+    </nav>
+  </div>
+
+  <section class="section profile">
+    <div class="row">
+      <div class="col-xl-4">
+        <div class="card">
+          <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
+            <h2>{{ challenge.title }}</h2>
+            <p class="text-muted">{{ challenge.get_type_display }} Challenge</p>
+            <div class="text-center">
+              {% if participant %}
+                <a class="btn btn-success">You're Participating</a>
+              {% else %}
+                <a href="#" class="btn btn-primary" onclick="joinChallenge(event, '{{ challenge.id }}')">Join Challenge</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-8">
+        <div class="card">
+          <div class="card-body pt-3">
+            <ul class="nav nav-tabs nav-tabs-bordered">
+              <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#overview">Overview</button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#participants">Participants</button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#winners">Winners</button>
+              </li>
+            </ul>
+
+            <div class="tab-content pt-2">
+              <div class="tab-pane fade show active" id="overview">
+                <h5 class="card-title">Challenge Overview</h5>
+                <p><strong>Subtopic:</strong> {{ challenge.subtopic }}</p>
+                <p><strong>Duration per Question:</strong> {{ challenge.duration_seconds }} seconds</p>
+                <p><strong>End Date:</strong> {{ challenge.end_date }}</p>
+                {% if challenge.requires_group %}<p><strong>Group Participation Required</strong></p>{% endif %}
+
+                <h5>Rewards</h5>
+                <p>Top {{ challenge.target_winners }} will win {{ challenge.challenge_reward }} <small>(Ksh {{ challenge.challenge_reward_monetary_value|intcomma }})</small></p>
+
+                {% if challenge.challenge_brief %}
+                <h5>Brief</h5>
+                <p>{{ challenge.challenge_brief }}</p>
+                {% endif %}
+
+                {% if challenge.challenge_guidelines %}
+                <h5>Guidelines</h5>
+                <p>{{ challenge.challenge_guidelines }}</p>
+                {% endif %}
+              </div>
+
+              <div class="tab-pane fade" id="participants">
+                <h5 class="card-title">Participants</h5>
+                <table class="table datatable">
+                  <thead>
+                    <tr>
+                      <th>Nickname</th>
+                      <th>Customer</th>
+                      <th>Group</th>
+                      <th>Joined At</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for participant in participants %}
+                    <tr>
+                      <td>{{ participant.nickname }}</td>
+                      <td>{{ participant.customer.user.get_full_name }}</td>
+                      <td>{{ participant.group.name if participant.group }}</td>
+                      <td>{{ participant.joined_at|naturaltime }}</td>
+                      <td><a href="{% url 'view_qna_participant' participant.id %}" class="btn btn-sm btn-info">View</a></td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="tab-pane fade" id="winners">
+                <h5 class="card-title">Winners</h5>
+                {% if results %}
+                <table class="table datatable">
+                  <thead>
+                    <tr>
+                      <th>Customer</th>
+                      <th>Correct Answers</th>
+                      <th>Total Score (%)</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for result in results|slice:":challenge.target_winners" %}
+                    <tr>
+                      <td>{{ result.participant.customer.user.get_full_name }}</td>
+                      <td>{{ result.correct_answers }}</td>
+                      <td>{{ result.total_score }}</td>
+                      <td><a href="{% url 'view_qna_participant_result' result.id %}" class="btn btn-sm btn-success">View</a></td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+                {% else %}
+                <div class="alert alert-warning">Winners not announced yet.</div>
+                {% endif %}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+function joinChallenge(event, challengeId) {
+  event.preventDefault();
+  // open modal to join or redirect to join form
+  alert('Join challenge logic to be implemented here.');
+}
+</script>
+{% endblock %}
