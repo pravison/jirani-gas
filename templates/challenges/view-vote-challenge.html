@@ -459,16 +459,22 @@ function getCookie(name) {
 
 <!-- Custom Upload Modal -->
 <div id="upload-popup" class="popup">
+  
     <div class="popup-content">
-        <h5>Upload Your Challenge Image</h5>
+        <h5>{% if challenge.type_of_results == 'image'%} Upload Your Challenge Image {% else %}Write Your Creative Piece{% endif %}</h5>
         <form id="customUploadForm" enctype="multipart/form-data">
             <input type="hidden" name="challenge_id" id="challenge-id-field">
-            <input type="file" name="entry_image" id="entryImageInput" accept="image/*" required><br><br>
+            {% if challenge.type_of_results == 'image'%}
+            <input type="file" name="entry_image" id="entryImageInput" accept="image/*" required ><br><br>
+            {% else %}
+            <textarea type="'text" name="entry_text" required></textarea><br><br>
+            {% endif %}
             <button type="submit" id="submitBtn">Submit</button>
             <button type="button" onclick="closeUploadPopup()">Close</button>
         </form>
         <p id="upload-status" style="margin-top: 10px; display: none; color: green;">Uploading...</p>
     </div>
+  
 </div>
 
 

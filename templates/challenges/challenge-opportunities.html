@@ -1,126 +1,155 @@
 {% extends 'profile-main.html' %}
 {% load static %}
 {% load custom_filters %}
-{% load humanize%}
-{% block title %} Challenge Opportunities {% endblock%}
+{% load humanize %}
+{% block title %} Challenge Opportunities {% endblock %}
 {% block content %}
 <style>
   .category {
     position: relative;
-    overflow: hidden; /* Ensure the strip doesn't go outside the box */
+    overflow: hidden;
     height: 20px;
-}
+  }
 
-
-.diagonal-strip {
+  .diagonal-strip {
     position: absolute;
-    top: 1%; /* Adjust as needed */
+    top: 1%;
     left: -5%;
-    width: 200%; /* Make it wide enough to cover the box */
-    transform: rotate(-1deg); /* Creates the diagonal effect */
-    background: #cc922e; /* Semi-transparent red for the "SOLD" strip */
+    width: 200%;
+    transform: rotate(-1deg);
+    background: #cc922e;
     color: white;
     text-align: center;
     font-size: 1.2rem;
     font-weight: bold;
-    z-index: 10; /* Ensure it appears on top of other content */
-    pointer-events: none; /* Makes the strip non-interactive */
-    padding: 10px 0; /* Adjust padding as needed */
-}
+    z-index: 10;
+    pointer-events: none;
+    padding: 10px 0;
+  }
 </style>
-  <main id="main" class="main">
 
-    <div class="pagetitle">
-      <h1>Challenge Opportunities</h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'profile' %}">Profile</a></li>
-          {% if vote_challenge %} 
-          <li class="breadcrumb-item"><a href="{% url 'refferal_challenge_opportunities' %}">Refferal Challenges</a></li>
-          {% else %}
-          <li class="breadcrumb-item"><a href="{% url 'vote_challenge_opportunities' %}">Creative Challenges</a></li>
-          {% endif %}
-          <li class="breadcrumb-item active">Welcome {% if request.user.is_authenticated %}{{ request.user.first_name }} {{ request.user.last_name }} {% endif %}</li>
-        </ol>
-      </nav>
-    </div><!-- End Page Title -->
+<main id="main" class="main">
 
-    <section class="section">
+  <div class="pagetitle">
+    <h1>Challenge Opportunities</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'profile' %}">Profile</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'view_all_qna_challenges' %}">Q&A Challenges</a></li>
+        {% if vote_challenge %} 
+        <li class="breadcrumb-item"><a href="{% url 'refferal_challenge_opportunities' %}">Refferal Challenges</a></li>
+        {% else %}
+        <li class="breadcrumb-item"><a href="{% url 'vote_challenge_opportunities' %}">Creative Challenges</a></li>
+        {% endif %}
+        <li class="breadcrumb-item active">Welcome {% if request.user.is_authenticated %}{{ request.user.first_name }} {{ request.user.last_name }}{% endif %}</li>
+      </ol>
+    </nav>
+  </div><!-- End Page Title -->
+
+  <section class="section">
     <div class="row align-items-top">
       {% if messages %}
-          {% for message in messages %}
+        {% for message in messages %}
           <div class="alert alert-warning alert-dismissible fade show" role="alert">
-              {{ message }}
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
-          {% endfor %}
+        {% endfor %}
       {% endif %}
-      <!-- Card with an image on top -->
+
       {% for challenge in challenges %}
+        {% if vote_challenge %}
+          {% url 'view_vote_challenge' challenge.id as challenge_url %}
+        {% else %}
+          {% url 'view_refferal_challenge' challenge.id as challenge_url %}
+        {% endif %}
 
-      <div class="card  ms-3 col-lg-4" style="padding: 5x;">
-        <a style="width: 100%;" href="{% if vote_challenge %} {% url 'view_vote_challenge' challenge.id %} {% else %}{% url 'view_refferal_challenge' challenge.id %}{% endif %}" class="mt-1 btn btn-warning mb-1">{% if vote_challenge %} {% if challenge.challenge_owner %} {{ challenge.challenge_owner }} {% else %} Jirani Mall {% endif %}{% else %} {{challenge.challenge_type }} Refferal {% endif %}Challenge opportunity</a>
-        
-        <div class="card-body">
-          <h5 class="card-title" style="margin-bottom :5px;"><b>{{ challenge.challenge_name}} </b><br/><span>start date: <b>{{challenge.start_date}}</b></span><br/><span>end date: <b>{{challenge.end_date}}</b></span><br/><span>target number of winners: <b>{{challenge.target_winners}}</b></span><br/><span>total participants: {{challenge.total_applications}}</span></h5>
-          <h5 class="card-title" style="margin-top: 5px;"><span>Challenge Reward:</span><br/><b>{{challenge.challenge_reward|safe}}</h5>
-          <h5 class="card-title" style="margin-bottom :5px;"><span>You will earn : <b>{{challenge.participating_reward}} points</b> for participating</span></h5>
-          {% if challenge.challenge_patners.first %}
-          <h5 class="card-title" style="margin-bottom :5px;"><b> Patners</b>
-            {% for patner in challenge.challenge_patners.all %}
-            <br/><span> {{patner}}</span>
-            {% endfor %}
-          </h5> 
-          {% endif %}
+        <div class="card ms-3 col-lg-4" style="padding: 5px;">
+          <a href="{{ challenge_url }}" class="mt-1 btn btn-warning mb-1">
+            {% if vote_challenge %}
+              {% if challenge.challenge_owner %}
+                {{ challenge.challenge_owner }}
+              {% else %}
+                Jirani Mall
+              {% endif %}
+            {% else %}
+              {{ challenge.challenge_type }} Referral
+            {% endif %}
+            Challenge Opportunity
+          </a>
+
+          <div class="card-body">
+            <h5 class="card-title" style="margin-bottom: 5px;">
+              <b>{{ challenge.challenge_name }}</b><br/>
+              <span>Start date: <b>{{ challenge.start_date }}</b></span><br/>
+              <span>End date: <b>{{ challenge.end_date }}</b></span><br/>
+              <span>Target number of winners: <b>{{ challenge.target_winners }}</b></span><br/>
+              <span>Total participants: {{ challenge.total_applications }}</span>
+            </h5>
+
+            <h5 class="card-title" style="margin-top: 5px;">
+              <span>Challenge Reward:</span><br/>
+              <b>{{ challenge.challenge_reward|safe }}</b>
+            </h5>
+
+            <h5 class="card-title" style="margin-bottom: 5px;">
+              <span>You will earn: <b>{{ challenge.participating_reward }} points</b> for participating</span>
+            </h5>
+
+            {% if challenge.challenge_patners.first %}
+              <h5 class="card-title" style="margin-bottom: 5px;"><b>Partners</b>
+                {% for patner in challenge.challenge_patners.all %}
+                  <br/><span>{{ patner }}</span>
+                {% endfor %}
+              </h5>
+            {% endif %}
+          </div>
+
+          <div class="card-body">
+            <a href="{{ challenge_url }}" class="btn btn-primary">View More</a>
+          </div>
         </div>
-        <div class="card-body">
-          <a href="{% if vote_challenge %} {% url 'view_vote_challenge' challenge.id %} {% else %}{% url 'view_refferal_challenge' challenge.id %}{% endif %}" class="btn btn-primary">View More</a>
-        </div>
-      </div><!-- End Card with an image on top -->
-      
       {% endfor %}
-
     </div>
   </section>
 
-  </main><!-- End #main -->
-<script>
-  function showPopup(event) {
-      event.preventDefault(); // Prevent default link behavior
-      const popup = document.getElementById('popup');
-      popup.style.display = 'flex'; // Show the popup
-  }
-  
-  function closePopup() {
-      const popup = document.getElementById('popup');
-      popup.style.display = 'none'; // Hide the popup
-  }
-  
-  function copyToClipboard() {
-      const urlField = document.getElementById('share-url');
-      urlField.select(); // Select the text
-      document.execCommand('copy'); // Copy the text to the clipboard
-      alert('URL copied to clipboard!');
-  }
-</script>
+</main><!-- End #main -->
 
 <script>
+  function showPopup(event) {
+    event.preventDefault();
+    const popup = document.getElementById('popup');
+    popup.style.display = 'flex';
+  }
+
+  function closePopup() {
+    const popup = document.getElementById('popup');
+    popup.style.display = 'none';
+  }
+
+  function copyToClipboard() {
+    const urlField = document.getElementById('share-url');
+    urlField.select();
+    document.execCommand('copy');
+    alert('URL copied to clipboard!');
+  }
+
   function showPopupBusiness(event) {
-      event.preventDefault(); // Prevent default link behavior
-      const popup = document.getElementById('popupBusiness');
-      popup.style.display = 'flex'; // Show the popup
+    event.preventDefault();
+    const popup = document.getElementById('popupBusiness');
+    popup.style.display = 'flex';
   }
-  
+
   function closeBusinessPopup() {
-      const popup = document.getElementById('popupBusiness');
-      popup.style.display = 'none'; // Hide the popup
+    const popup = document.getElementById('popupBusiness');
+    popup.style.display = 'none';
   }
-  
+
   function copyBusinessToClipboard() {
-      const urlField = document.getElementById('share-url-business');
-      urlField.select(); // Select the text
-      document.execCommand('copy'); // Copy the text to the clipboard
-      alert('URL copied to clipboard!');
+    const urlField = document.getElementById('share-url-business');
+    urlField.select();
+    document.execCommand('copy');
+    alert('URL copied to clipboard!');
   }
 </script>
 

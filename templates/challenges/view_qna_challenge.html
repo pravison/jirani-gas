@@ -110,7 +110,7 @@
                     <tr>
                       <td>{{ participant.nickname }}</td>
                       <td>{{ participant.customer.user.get_full_name }}</td>
-                      <td>{{ participant.group.name if participant.group }}</td>
+                      <td>{%  if participant.group  %} {{ participant.group.name}} {% endif %}</td>
                       <td>{{ participant.joined_at|naturaltime }}</td>
                       <td><a href="{% url 'view_qna_participant' participant.id %}" class="btn btn-sm btn-info">View</a></td>
                     </tr>

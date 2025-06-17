@@ -34,7 +34,7 @@ class RefferalChallengeResult(models.Model):
 
         return f'{self.customer} total refferal: {self.total_refferals}'
 
-
+ # creative challenge
 class VoteChallenge(models.Model):
     challenge_owner = models.ForeignKey(Business, blank=True, null=True, on_delete=models.SET_NULL, help_text='one who creates the challenge and responsible for distributing rewards', related_name="challenge_owner")# if null means our own company created the challenge and will be responsible for rewarding winners
     challenge_patners = models.ManyToManyField(Business, blank=True, help_text='business patners', related_name="challenge_patners")# businesses patnering in the challenge
@@ -44,6 +44,7 @@ class VoteChallenge(models.Model):
     challenge_reward_monetary_value = models.IntegerField(default=0)
     challenge_brief = models.TextField(max_length=1500, blank=True, help_text='share a brief about the challenge')
     challenge_guidelines = models.TextField(max_length=1500, blank=True, help_text='share a brief about the challenge')
+    type_of_results = models.CharField(max_length=100, default='text', choices=(('text', 'text'), ('image', 'image')))
     target_winners = models.IntegerField(help_text='how many winners do you want for this challenge')
     closed = models.BooleanField(default=False)
     start_date = models.DateTimeField(auto_now_add=True)
@@ -69,6 +70,7 @@ class VoteChallengeParticipant(models.Model):
     challenge = models.ForeignKey(VoteChallenge, on_delete=models.CASCADE, related_name="vote_challenges")
     participant = models.ForeignKey(Customer, on_delete=models.CASCADE)
     results_image_url = models.URLField(max_length=500, null=True, blank=True)
+    results_text = models.TextField(max_length=1500, blank=True)
     total_voters = models.IntegerField(default=0)
     total_votes = models.IntegerField(default=0)
     received_reward = models.CharField(max_length=200, null=True, blank=True)

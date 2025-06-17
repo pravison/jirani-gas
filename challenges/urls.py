@@ -16,7 +16,7 @@ urlpatterns = [
     path('purchase-votes/', views.purchase_votes, name='purchase_votes'),
     path('create-qna-challenge/', views.create_qna_challenge, name='create_qna_challenge'),
 
-    path('qna-challenges/', views.qna_challenge_list, name='qna_challenge_list'),
+    path('qna-challenges/', views.qna_challenge_list, name='view_all_qna_challenges'),
     path('qna-challenges/<int:challenge_id>/', views.view_qna_challenge, name='view_qna_challenge'),
     path('qna-challenges/<int:challenge_id>/join/', views.join_qna_challenge, name='join_qna_challenge'),
     path('qna-participant/<int:participant_id>/', views.view_qna_participant, name='view_qna_participant'),

@@ -1,0 +1,76 @@
+{% extends 'profile-main.html' %}
+{% load static %}
+{% load humanize %}
+{% block title %} Q&A Challenges {% endblock %}
+{% block content %}
+<main id="main" class="main">
+
+  <div class="pagetitle">
+    <h1>Q&A Challenge Opportunities</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'profile' %}">Profile</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'refferal_challenge_opportunities' %}">Refferal Challenges</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'vote_challenge_opportunities' %}">Creative Challenges</a></li>
+        <li class="breadcrumb-item active">Welcome {% if request.user.is_authenticated %}{{ request.user.first_name }} {{ request.user.last_name }}{% endif %}</li>
+      </ol>
+    </nav>
+  </div><!-- End Page Title -->
+
+  <section class="section">
+    <div class="row align-items-top">
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% for challenge in challenges %}
+        <div class="card ms-3 col-lg-4" style="padding: 5px;">
+          <a style="width: 100%;" href="{% url 'view_qna_challenge' challenge.id %}" class="mt-1 btn btn-warning mb-1">
+            {{ challenge.business.name|default:"Public" }} Q&A Challenge
+          </a>
+
+          <div class="card-body">
+            <h5 class="card-title" style="margin-bottom: 5px;">
+              <b>{{ challenge.title }}</b><br/>
+              <span>Start: <b>{{ challenge.start_time|naturaltime }}</b></span><br/>
+              <span>End: <b>{{ challenge.end_date|naturaltime }}</b></span><br/>
+              <span>Target Winners: <b>{{ challenge.target_winners }}</b></span><br/>
+              <span>Type: <b>{{ challenge.get_type_display }}</b></span>
+            </h5>
+
+            <h5 class="card-title" style="margin-top: 5px;">
+              <span>Challenge Reward:</span><br/>
+              <b>{{ challenge.challenge_reward }}</b>
+            </h5>
+
+            {% if challenge.challenge_reward_monetary_value %}
+              <h5 class="card-title"><span>Monetary Value:</span>
+                <br/><b>KES {{ challenge.challenge_reward_monetary_value|intcomma }}</b>
+              </h5>
+            {% endif %}
+
+            {% if challenge.requires_group %}
+              <span class="badge bg-info text-dark">Group Required</span>
+            {% endif %}
+          </div>
+
+          <div class="card-body">
+            <a href="{% url 'view_qna_challenge' challenge.id %}" class="btn btn-primary">View More</a>
+          </div>
+        </div><!-- End Challenge Card -->
+      {% empty %}
+        <p>No Q&A challenges available right now.</p>
+      {% endfor %}
+
+    </div>
+  </section>
+
+</main><!-- End #main -->
+
+{% endblock %}

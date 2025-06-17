@@ -230,15 +230,20 @@ def join_vote_challenge(request, id):
         return JsonResponse({'error': 'You already joined this challenge'}, status=400)
 
     image_file = request.FILES.get('entry_image')
-    if not image_file:
-        return JsonResponse({'error': 'No image uploaded'}, status=400)
-
+    text_results = request.FILES.get('entry_text')
+    if  challenge.type_of_results == 'image':
+        if not image_file:
+            return JsonResponse({'error': 'No image uploaded'}, status=400)
+    else:
+        if not text_results:
+            return JsonResponse({'error': 'No text submitted'}, status=400)
     try:
         image_url = upload_image_to_google_drive(image_file)
         joining = VoteChallengeParticipant.objects.create(
             challenge=challenge,
             participant=customer,
             results_image_url=image_url,
+            type_of_results= text_results,
             received_reward=f'{challenge.participating_reward} points'
         )
 
@@ -295,6 +300,7 @@ def create_vote_challenge(request):
         challenge_reward_monetary_value = request.POST['challenge_reward_monetary_value']
         challenge_brief = request.POST['challenge_brief']
         challenge_guidelines = request.POST['challenge_guidelines']
+        type_of_results = request.POST['type_of_results']
         target_winners = request.POST['target_winners']
         end_date = request.POST['end_date']
         
@@ -307,6 +313,7 @@ def create_vote_challenge(request):
             challenge_reward_monetary_value=challenge_reward_monetary_value, 
             challenge_brief=challenge_brief, 
             challenge_guidelines=challenge_guidelines, 
+            type_of_results = type_of_results,
             target_winners=target_winners, 
             end_date=end_date
             )
@@ -697,9 +704,19 @@ from .models import QuestionandAnswerChallenge, Participant, Result, Group, Grou
 
 # List all QnA challenges
 def qna_challenge_list(request):
-    challenges = QuestionandAnswerChallenge.objects.all().order_by('-created_at')
-    return render(request, 'challenges/qna_challenge_list.html', {'challenges': challenges})
+    now = timezone.now()
 
+    # Get only challenges that are not closed and still ongoing
+    challenges = QuestionandAnswerChallenge.objects.filter(
+        closed=False,
+        end_date__gt=now
+    ).order_by('-created_at')
+
+    context = {
+        'challenges': challenges,
+        'now': now,
+    }
+    return render(request, 'challenges/qna_challenge_list.html', context)
 
 # View specific challenge with details
 @login_required
