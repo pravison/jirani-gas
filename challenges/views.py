@@ -230,7 +230,7 @@ def join_vote_challenge(request, id):
         return JsonResponse({'error': 'You already joined this challenge'}, status=400)
 
     image_file = request.FILES.get('entry_image')
-    text_results = request.FILES.get('entry_text') or ''
+    text_results = request.POST.get('entry_text', '')
     if  challenge.type_of_results == 'image':
         if not image_file:
             return JsonResponse({'error': 'No image uploaded'}, status=400)
