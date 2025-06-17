@@ -754,7 +754,7 @@ def view_qna_challenge(request, challenge_id):
 def join_qna_challenge(request, challenge_id):
     challenge = get_object_or_404(QuestionandAnswerChallenge, pk=challenge_id)
     customer = request.user.customer
-
+    # window.location.href = "{% url 'show_results' challenge.id participant.id %}";
     # Ensure customer hasn't already joined
     if Participant.objects.filter(customer=customer, challenge=challenge).exists():
         return redirect('view_qna_challenge', challenge_id=challenge.id)
