@@ -70,7 +70,7 @@ class VoteChallengeParticipant(models.Model):
     challenge = models.ForeignKey(VoteChallenge, on_delete=models.CASCADE, related_name="vote_challenges")
     participant = models.ForeignKey(Customer, on_delete=models.CASCADE)
     results_image_url = models.URLField(max_length=500, null=True, blank=True)
-    results_text = models.TextField(max_length=1500, blank=True)
+    results_text = models.TextField(max_length=1500, null=True, blank=True)
     total_voters = models.IntegerField(default=0)
     total_votes = models.IntegerField(default=0)
     received_reward = models.CharField(max_length=200, null=True, blank=True)
