@@ -1,4 +1,4 @@
-{% extends 'business/main.html' %}
+{% extends 'profile-main.html' %}
 {% load static %}
 {% load humanize %}
 {% block title %}{{ challenge.title }}{% endblock %}
@@ -43,14 +43,16 @@
       <div class="col-xl-4">
         <div class="card">
           <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
-            <h2>{{ challenge.title }}</h2>
-            <p class="text-muted">{{ challenge.get_type_display }} Challenge</p>
+            <!-- <a style="width: 100%;" href="#" class="mt-1 btn btn-warning mb-1">{% if challenge.challenge_owner %} {{ challenge.challenge_owner }} {% else %} Jirani Mall {% endif %}challenge opportunity</a> -->
+            <h2 class="text-center">{{ challenge.title }} challenge</h2>
+            <div  class="btn btn-danger text-white mb-1" id="countdown" ></div>
             <div class="text-center">
-              {% if participant %}
-                <a class="btn btn-success">You're Participating</a>
-              {% else %}
-                <a href="#" class="btn btn-primary" onclick="joinChallenge(event, '{{ challenge.id }}')">Join Challenge</a>
-              {% endif %}
+            {% if participating %}
+              <a class="btn btn-primary mt-3" href="" onclick="showPopup(event)" style=" color: white"><b>Copy the Link and Share with Your Neighbors and friends</b></a>
+              
+            {% else %}
+              <a href="{% url 'start_challenge' challenge.id %}" id="inviteButton" class="btn btn-primary">Join Challenge</a>            
+            {% endif %}
             </div>
           </div>
         </div>
@@ -72,26 +74,54 @@
             </ul>
 
             <div class="tab-content pt-2">
-              <div class="tab-pane fade show active" id="overview">
-                <h5 class="card-title">Challenge Overview</h5>
-                <p><strong>Subtopic:</strong> {{ challenge.subtopic }}</p>
-                <p><strong>Duration per Question:</strong> {{ challenge.duration_seconds }} seconds</p>
-                <p><strong>End Date:</strong> {{ challenge.end_date }}</p>
-                {% if challenge.requires_group %}<p><strong>Group Participation Required</strong></p>{% endif %}
-
-                <h5>Rewards</h5>
-                <p>Top {{ challenge.target_winners }} will win {{ challenge.challenge_reward }} <small>(Ksh {{ challenge.challenge_reward_monetary_value|intcomma }})</small></p>
-
-                {% if challenge.challenge_brief %}
-                <h5>Brief</h5>
-                <p>{{ challenge.challenge_brief }}</p>
-                {% endif %}
-
-                {% if challenge.challenge_guidelines %}
-                <h5>Guidelines</h5>
-                <p>{{ challenge.challenge_guidelines }}</p>
-                {% endif %}
+              <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                the earllier you join and start sharing your link the higher chances you get to win
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
               </div>
+              <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                  <h5 class="card-title">{{ challenge.challenge_name}} challenge</h5>
+                  <p class="small fst-italic">Last Day of Challenge: {{ challenge.end_date}}</p>
+
+                  <h5 class="card-title">What You Can win</h5>
+                  {% if challenge.participating_reward %}
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label">Every Participant gets </div>
+                    <div class="col-lg-9 col-md-8">{{ challenge.participating_reward}} points</div>
+                  </div>
+                  {% endif %}
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label">The top {{challenge.target_winners}} will win </div>
+                    <div class="col-lg-9 col-md-8">{{ challenge.challenge_reward|safe}} <span>(worth ksh{{challenge.challenge_reward_monetary_value|intcomma}})</span></div>
+                  </div>
+                  <h5 class="card-title">Details</h5>
+                  {% if challenge.challenge_brief %}
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label">Challenge Brief</div>
+                    <div class="col-lg-9 col-md-8">{{ challenge.challenge_brief|safe}}</div>
+                  </div>
+                  {% endif %}
+                  {% if challenge.challenge_guidelines %}
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label">Challenge Guidelines </div>
+                    <div class="col-lg-9 col-md-8">{{ challenge.challenge_guidelines|safe}}</div>
+                  </div>
+                  {% endif %}
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label">Challenge Host</div>
+                    <div class="col-lg-9 col-md-8"> {% if challenge.business %}{{ challenge.business}} {% else %} Jirani Mall{% endif %}</div>
+                  </div>
+                  <div class="row">
+                    <div class="col-lg-3 col-md-4 label">Challenge Closed</div>
+                    <div class="col-lg-9 col-md-8"> {% if challenge.closed %} Yes {% else %} No {% endif %}</div>
+                  </div>
+                  {% if challenge.challenge_patners.first %}
+                  <h5 class="card-title">Challenge Patners</h5>
+                    {% for patner in challenge.challenge_patners.all %}
+                    <div class="col-lg-3 col-md-4 label">{{forloop.counter}}. {{patner}}</div>
+                    {% endfor %}
+                  {% endif %}
+              </div>
+              
 
               <div class="tab-pane fade" id="participants">
                 <h5 class="card-title">Participants</h5>
@@ -155,9 +185,102 @@
   </section>
 </main>
 
+<!-- script for loding -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const inviteButton = document.getElementById('inviteButton');
+
+        inviteButton.addEventListener('click', function (e) {
+                // Disable the button
+                button.classList.add('disabled');
+                button.textContent = "working on it...";
+            });
+        });
+</script>
+<!-- script for link modal -->
+<script>
+    function showPopup(event) {
+        event.preventDefault(); // Prevent default link behavior
+        
+        const popup = document.getElementById('popup');
+        const shareUrlInput = document.getElementById('share-url');
+        
+        // Construct the referral URL
+        var  urlLink= '{{ request.build_absolute_uri }}'
+        const referralUrl = `${urlLink}`;
+
+        console.log(referralUrl)
+        // Set the referral URL in the input field
+        shareUrlInput.value = referralUrl;
+
+        popup.style.display = 'flex'; // Show the popup
+    }
+
+    function closePopup() {
+        const popup = document.getElementById('popup');
+        popup.style.display = 'none'; // Hide the popup
+    }
+
+    function copyToClipboard() {
+        const urlField = document.getElementById('share-url');
+        urlField.select(); // Select the text
+        document.execCommand('copy'); // Copy the text to the clipboard
+        alert('Referral URL copied to clipboard!');
+    }
+</script>
+
+<!-- Popup Modal -->
+<div id="popup" class="popup" style="display:none;">
+    <div class="popup-content">
+        <p>Share this URL:</p>
+        <input type="text" id="share-url" readonly />
+        <button onclick="copyToClipboard()">Copy</button>
+        <button onclick="closePopup()">Close</button>
+    </div>
+</div>
+<!-- script for countdown -->
+<script>
+    // Parse the target time from Django
+    const deadline = new Date("{{ last_day|date:'Y-m-d\\TH:i:s' }}");
+
+    function updateCountdown() {
+        const now = new Date();
+        const diff = deadline - now;
+
+        if (diff <= 0) {
+            document.getElementById("countdown").innerText = "Time's up!";
+            clearInterval(timer);
+            return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+
+        document.getElementById("countdown").innerText =
+            `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    updateCountdown(); // Initial call
+    const timer = setInterval(updateCountdown, 1000); // Update every second
+</script>
+<!-- script to check if user is logged in -->
+<script>
+    const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+    const loginUrl = "{% url 'login_user' %}";  // Adjust 'login' to your actual login URL name
+</script>
+
+
+<!-- script for joining challenge -->
 <script>
 function joinChallenge(event, challengeId) {
   event.preventDefault();
+  if (!isAuthenticated) {
+        window.location.href = loginUrl + '?next=' + window.location.pathname;
+        return;
+    }
+
   // open modal to join or redirect to join form
   alert('Join challenge logic to be implemented here.');
 }

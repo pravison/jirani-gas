@@ -719,11 +719,16 @@ def qna_challenge_list(request):
     return render(request, 'challenges/qna_challenge_list.html', context)
 
 # View specific challenge with details
-@login_required
 def view_qna_challenge(request, challenge_id):
-    challenge = get_object_or_404(QuestionandAnswerChallenge, pk=challenge_id)
-
-    customer = request.user.customer
+    challenge = QuestionandAnswerChallenge.objects.filter(pk=challenge_id).first()
+    if not challenge:
+        messages.success(request, "Q&A Challenge was not found reselect.")
+        return redirect('view_all_qna_challenges')
+    last_day = challenge.end_date  # example
+    current_time = now()
+    customer =  None
+    if request.user.is_authenticated:
+        customer = request.user.customer
     participant = Participant.objects.filter(customer=customer, challenge=challenge).first()
     participants = Participant.objects.filter(challenge=challenge).select_related('customer')
 
@@ -737,13 +742,15 @@ def view_qna_challenge(request, challenge_id):
         'participating': participant,
         'customer': customer,
         'winners': winners,
+        'current_time': current_time,
+        'last_day': last_day
     }
 
     return render(request, 'challenges/view_qna_challenge.html', context)
 
 
 # Join challenge view
-@login_required
+@login_required(login_url="/accounts/login-user/")
 def join_qna_challenge(request, challenge_id):
     challenge = get_object_or_404(QuestionandAnswerChallenge, pk=challenge_id)
     customer = request.user.customer
@@ -762,7 +769,7 @@ def join_qna_challenge(request, challenge_id):
 
 
 # View individual participant performance
-@login_required
+@login_required(login_url="/accounts/login-user/")
 def view_qna_participant(request, participant_id):
     participant = get_object_or_404(Participant, pk=participant_id)
     result = Result.objects.filter(participant=participant).first()
@@ -773,3 +780,126 @@ def view_qna_participant(request, participant_id):
         'result': result,
         'answers': answers,
     })
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import QuestionandAnswerChallenge, Question, Choice, Participant, Answer
+from django.utils import timezone
+from django.http import JsonResponse
+from django.core.serializers.json import DjangoJSONEncoder
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+import json
+# start q and a challenge
+import uuid
+
+def start_challenge(request, challenge_id):
+    challenge = get_object_or_404(QuestionandAnswerChallenge, id=challenge_id)
+    customer = request.user.customer
+
+    # Try to get or create the participant
+    participant, created = Participant.objects.get_or_create(
+        customer=customer,
+        challenge=challenge,
+        defaults={
+            'session_token': str(uuid.uuid4()),  # Assign unique token only when creating
+        }
+    )
+
+    # If not created and session_token is missing (due to previous bad data), fix it
+    if not participant.session_token:
+        participant.session_token = str(uuid.uuid4())
+        participant.save()
+
+    # Prepare questions + answered check
+    all_questions = challenge.subtopic.questions.prefetch_related('choices').order_by('order')
+    answered_ids = Answer.objects.filter(participant=participant).values_list('question_id', flat=True)
+    
+    questions = []
+    for q in all_questions:
+        questions.append({
+            'id': q.id,
+            'text': q.text,
+            'choices': [{'id': c.id, 'text': c.text} for c in q.choices.all()]
+        })
+
+    # Find next unanswered question
+    next_index = 0
+    for i, q in enumerate(all_questions):
+        if q.id not in answered_ids:
+            next_index = i
+            break
+    else:
+        return redirect('show_results', challenge_id=challenge.id, participant_id=participant.id)
+
+    return render(request, 'challenges/start_challenge.html', {
+        'challenge': challenge,
+        'questions_json': json.dumps(questions, cls=DjangoJSONEncoder),
+        'participant': participant,
+        'start_index': next_index,
+    })
+# def start_challenge(request, challenge_id):
+#     challenge = get_object_or_404(QuestionandAnswerChallenge, id=challenge_id)
+#     participant, _ = Participant.objects.get_or_create(
+#         customer=request.user.customer,
+#         challenge=challenge,
+#     )
+
+#     all_questions = challenge.subtopic.questions.prefetch_related('choices').order_by('order')
+#     answered_ids = Answer.objects.filter(participant=participant).values_list('question_id', flat=True)
+    
+#     questions = []
+#     for q in all_questions:
+#         questions.append({
+#             'id': q.id,
+#             'text': q.text,
+#             'choices': [{'id': c.id, 'text': c.text} for c in q.choices.all()]
+#         })
+
+#     next_index = 0
+#     for i, q in enumerate(all_questions):
+#         if q.id not in answered_ids:
+#             next_index = i
+#             break
+#     else:
+#         return redirect('show_results', challenge_id=challenge.id, participant_id=participant.id)
+
+#     return render(request, 'challenges/start_challenge.html', {
+#         'challenge': challenge,
+#         'questions_json': json.dumps(questions, cls=DjangoJSONEncoder),
+#         'participant': participant,
+#         'start_index': next_index,
+#     })
+
+
+
+@csrf_exempt
+@require_POST
+def save_answer(request):
+    data = json.loads(request.body)
+    question_id = data.get('question_id')
+    choice_id = data.get('choice_id')
+    start_time = float(data.get('start_time'))
+
+    question = Question.objects.get(id=question_id)
+    choice = Choice.objects.get(id=choice_id)
+    participant = Participant.objects.get(session_token=data.get('token'))
+    
+    end_time = timezone.now()
+    time_taken = (end_time - timezone.datetime.fromtimestamp(start_time)).total_seconds()
+
+    is_correct = choice.is_correct
+    percentage_score = max(0, 100 - int((time_taken / 20) * 100)) if is_correct else 0
+
+    Answer.objects.create(
+        participant=participant,
+        question=question,
+        choice=choice,
+        started_at=timezone.datetime.fromtimestamp(start_time),
+        answered_at=end_time,
+        time_taken=time_taken,
+        is_correct=is_correct,
+        total_score=percentage_score
+    )
+
+    return JsonResponse({'success': True, 'percentage': percentage_score})

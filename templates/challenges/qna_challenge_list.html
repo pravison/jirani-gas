@@ -32,7 +32,7 @@
       {% for challenge in challenges %}
         <div class="card ms-3 col-lg-4" style="padding: 5px;">
           <a style="width: 100%;" href="{% url 'view_qna_challenge' challenge.id %}" class="mt-1 btn btn-warning mb-1">
-            {{ challenge.business.name|default:"Public" }} Q&A Challenge
+            {{ challenge.business.business_name|default:"Jirani Mall" }} Q&A Challenge
           </a>
 
           <div class="card-body">

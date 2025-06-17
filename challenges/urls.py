@@ -20,6 +20,8 @@ urlpatterns = [
     path('qna-challenges/<int:challenge_id>/', views.view_qna_challenge, name='view_qna_challenge'),
     path('qna-challenges/<int:challenge_id>/join/', views.join_qna_challenge, name='join_qna_challenge'),
     path('qna-participant/<int:participant_id>/', views.view_qna_participant, name='view_qna_participant'),
+    path('start-challenges/<int:challenge_id>/', views.start_challenge, name='start_challenge'),
+    path('save-answer/', views.save_answer, name='save_answer'),
 
 ]
    
