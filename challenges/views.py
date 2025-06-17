@@ -243,7 +243,7 @@ def join_vote_challenge(request, id):
             challenge=challenge,
             participant=customer,
             results_image_url=image_url,
-            type_of_results= text_results,
+            results_text = text_results,
             received_reward=f'{challenge.participating_reward} points'
         )
 
